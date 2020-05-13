@@ -1,3 +1,5 @@
+from crownstone_core.topics.Topics import Topics
+
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.dataFlowManagers.StoneStateManager import StoneStateManager
 from crownstone_uart.topics.SystemTopics import SystemTopics
@@ -27,6 +29,3 @@ class StoneManager:
             self.stones[stoneId]["available"] = True
         else:
             self.stones[stoneId] = {"available": True, "id": stoneId}
-            
-        # UartEventBus.emit(Topics.crownstoneAvailable, self.stones[stoneId])
-        

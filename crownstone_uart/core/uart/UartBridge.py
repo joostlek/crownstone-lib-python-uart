@@ -13,7 +13,6 @@ from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
 from crownstone_uart.core.uart.UartTypes import UartTxType
 from crownstone_uart.core.uart.UartWrapper import UartWrapper
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from crownstone_uart.topics.UsbTopics import UsbTopics
 
 
 class UartBridge (threading.Thread):
@@ -32,7 +31,7 @@ class UartBridge (threading.Thread):
         threading.Thread.__init__(self)
 
     def __del__(self):
-        self.stop()
+        self.stop_sync()
 
     async def handshake(self):
         collector = EchoResponse(0.2)
@@ -59,7 +58,7 @@ class UartBridge (threading.Thread):
         self.start_reading()
     #
     def stop_sync(self):
-        print("Stopping UartBridge")
+        # print("Stopping UartBridge")
         self.running = False
         UartEventBus.unsubscribe(self.eventId)
 
@@ -69,31 +68,44 @@ class UartBridge (threading.Thread):
         while self.serialController is not None and counter < 2:
             counter += 0.1
             await asyncio.sleep(0.1)
+
+    async def isAlive(self):
+        while self.serialController is not None and self.running:
+            await asyncio.sleep(0.1)
     #
     def start_serial(self):
-        print("Initializing serial on port ", self.port, ' with baudrate ', self.baudrate)
-        self.serialController = serial.Serial()
-        self.serialController.port = self.port
-        self.serialController.baudrate = int(self.baudrate)
-        self.serialController.timeout = 0.5
-        self.serialController.open()
+        # print("Initializing serial on port ", self.port, ' with baudrate ', self.baudrate)
+        try:
+            self.serialController = serial.Serial()
+            self.serialController.port = self.port
+            self.serialController.baudrate = int(self.baudrate)
+            self.serialController.timeout = 0.5
+            self.serialController.open()
+        except:
+            self.stop_sync()
 
 
     def start_reading(self):
         readBuffer = UartReadBuffer()
-        print("Read starting on serial port.")
-        while self.running:
-            bytes = self.serialController.read()
-            if bytes:
-                # clear out the entire read buffer
-                if self.serialController.in_waiting > 0:
-                    additionalBytes = self.serialController.read(self.serialController.in_waiting)
-                    bytes = bytes + additionalBytes
-                readBuffer.addByteArray(bytes)
+        # print("Read starting on serial port.")
+        try:
+            while self.running:
+                bytes = self.serialController.read()
+                if bytes:
+                    # clear out the entire read buffer
+                    if self.serialController.in_waiting > 0:
+                        additionalBytes = self.serialController.read(self.serialController.in_waiting)
+                        bytes = bytes + additionalBytes
+                    readBuffer.addByteArray(bytes)
 
-        print("Cleaning up UartBridge")
+            # print("Cleaning up UartBridge")
+        except serial.SerialException as err:
+            print("Connection Failed. Retrying...")
         self.serialController.close()
         self.serialController = None
 
     def write_to_uart(self, data):
-        self.serialController.write(data)
+        if self.serialController is not None:
+            self.serialController.write(data)
+        else:
+            self.stop_sync()

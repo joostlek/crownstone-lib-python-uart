@@ -8,7 +8,7 @@ class StoneStateManager:
         self.stones = {}
         UartEventBus.subscribe(SystemTopics.stateUpdate, self.handleStateUpdate)
 
-    def handleStateUpdate(self,data):
+    def handleStateUpdate(self, data):
         stoneId = data[0]
         stoneStatePacket = data[1]
 

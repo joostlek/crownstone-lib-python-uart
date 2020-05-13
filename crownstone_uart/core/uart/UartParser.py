@@ -25,7 +25,9 @@ class UartParser:
     def parse(self, dataPacket):
         opCode = dataPacket.opCode
         parsedData = None
-#        print("UART - opCode:", opCode, "payload:", dataPacket.payload)
+
+        # if opCode != UartRxType.OWN_SERVICE_DATA:
+        #     print("UART - opCode:", opCode, "payload:", dataPacket.payload)
 
         if opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
@@ -35,7 +37,7 @@ class UartParser:
             # if serviceData.validData:
             #     UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
 
-        elif opCode == UartRxType.SERVICE_DATA:
+        elif opCode == UartRxType.OWN_SERVICE_DATA:
             # service data type + device type + data type + service data (15b)
             serviceData = ServiceData(dataPacket.payload)
             if serviceData.validData:
@@ -106,6 +108,13 @@ class UartParser:
         elif opCode == UartRxType.FIRMWARESTATE:
             # no need to process this, that's in the test suite.
             pass
+        elif opCode == UartRxType.EXTERNAL_STATE_PART_0:
+            # no need to process this, that's in the test suite.
+            pass
+        elif opCode == UartRxType.EXTERNAL_STATE_PART_1:
+            # no need to process this, that's in the test suite.
+            pass
+
         else:
             print("Unknown OpCode", opCode)
 

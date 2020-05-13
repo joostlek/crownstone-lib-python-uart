@@ -1,1 +1,6 @@
 .idea
+test.py
+
+dist
+build
+crownstone_lib_python_uart.egg-info

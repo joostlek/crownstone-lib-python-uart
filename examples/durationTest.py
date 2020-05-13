@@ -2,46 +2,38 @@
 
 """An example that prints all Crownstone IDs seen on the mesh."""
 
-import time, datetime, json
-from BluenetLib import Bluenet, UartEventBus, UsbTopics
+import time, json
 
-# Create new instance of Bluenet
-bluenet = Bluenet()
+from crownstone_uart.topics.UsbTopics import UsbTopics
+from crownstone_uart.core.UartEventBus import UartEventBus
+from crownstone_uart.core.CrownstoneUart import CrownstoneUart
+
+uart = CrownstoneUart()
 
 # Start up the USB bridge.
-# Fill in the correct device, see the readme.
-# For firmware versions below 2.1, add the parameter baudrate=38400
-bluenet.initializeUSB("/dev/ttyUSB0")
-
-def log(string):
-	now = datetime.datetime.now().strftime("%Y-%m-%d %H.%M.%S")
-	payload = now + " - " + string
-	filename = datetime.datetime.now().strftime("%Y-%m-%d %H") + ".txt"
-	handle = open(filename, "a")
-	handle.write(payload + "\n")
-	handle.close()
-
-	print(payload)
+uart.initialize_usb_sync()
 
 def showNewData(data):
 	print("New data received!")
 	print(json.dumps(data, indent=2))
 	print("-------------------")
 
-	log("PING!")
-	bluenet.uartEcho("PONG!")
+	print("PING!")
+	uart.uartEcho("PONG!")
 
 def showUartMessage(data):
-	log("Received Uart Message " + data["string"])
+	print("Received Uart Message " + data["string"])
 
 # Set up event listeners
 UartEventBus.subscribe(UsbTopics.newDataAvailable, showNewData)
 UartEventBus.subscribe(UsbTopics.uartMessage, showUartMessage)
 
-# List the ids that have been seen
 print("Listening for Crownstones on the mesh, this might take a while.")
-while bluenet.running:
-	time.sleep(1)
-	# ids = bluenet.getCrownstoneIds()
-	# print("Crownstone IDs seen so far:", ids)
+# the try except part is just to catch a control+c, time.sleep does not appreciate being killed.
+try:
+	while uart.running:
+		time.sleep(1)
+except KeyboardInterrupt:
+	print("Closing example.... Thanks for your time!")
 
+uart.stop()

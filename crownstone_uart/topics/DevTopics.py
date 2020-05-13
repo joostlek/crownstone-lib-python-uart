@@ -4,7 +4,7 @@ class DevTopics(Enum):
     newServiceData = "newServiceData"  # data is dictionary: {
                                        #                        "id": int
                                        #                        "opCode": int
-                                       #                        "dataTyle": int
+                                       #                        "dataType": int
                                        #                        "switchState": int
                                        #                        "flagBitmask": int
                                        #                        "temperature": int
