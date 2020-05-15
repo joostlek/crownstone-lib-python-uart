@@ -4,9 +4,7 @@
 
 import time, json
 
-from crownstone_uart.topics.UsbTopics import UsbTopics
-from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.CrownstoneUart import CrownstoneUart
+from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 uart = CrownstoneUart()
 
@@ -25,8 +23,8 @@ def showUartMessage(data):
 	print("Received Uart Message " + data["string"])
 
 # Set up event listeners
-UartEventBus.subscribe(UsbTopics.newDataAvailable, showNewData)
-UartEventBus.subscribe(UsbTopics.uartMessage, showUartMessage)
+UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
+UartEventBus.subscribe(UartTopics.uartMessage, showUartMessage)
 
 print("Listening for Crownstones on the mesh, this might take a while.")
 # the try except part is just to catch a control+c, time.sleep does not appreciate being killed.

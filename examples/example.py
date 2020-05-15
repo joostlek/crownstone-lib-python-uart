@@ -6,8 +6,7 @@ import time, json
 
 
 # Function that's called when the power usage is updated.
-from core.UartEventBus import UartEventBus
-from topics.UsbTopics import UsbTopics
+from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 
 def showNewData(data):
@@ -26,7 +25,7 @@ uart.initialize_usb_sync()
 # await uart.initialize_usb()
 
 # Set up event listeners
-UartEventBus.subscribe(UsbTopics.newDataAvailable, showNewData)
+UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
 
 # This is the id of the Crownstone we will be switching
 # change it to match the Crownstone Id you want to switch!
@@ -50,6 +49,6 @@ try:
 		switchState = not switchState
 		time.sleep(2)
 except KeyboardInterrupt:
-	print("Closing example.... Thanks for your time!")
+	print("\nClosing example.... Thanks for your time!")
 
 uart.stop()

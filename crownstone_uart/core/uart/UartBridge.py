@@ -28,7 +28,9 @@ class UartBridge (threading.Thread):
         self.running = True
 
         self.start_serial()
-        threading.Thread.__init__(self)
+
+        if self.running:
+            threading.Thread.__init__(self)
 
     def __del__(self):
         self.stop_sync()
@@ -79,7 +81,7 @@ class UartBridge (threading.Thread):
             self.serialController = serial.Serial()
             self.serialController.port = self.port
             self.serialController.baudrate = int(self.baudrate)
-            self.serialController.timeout = 0.5
+            self.serialController.timeout = 0.25
             self.serialController.open()
         except:
             self.stop_sync()

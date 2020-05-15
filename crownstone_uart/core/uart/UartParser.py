@@ -14,7 +14,7 @@ from crownstone_uart.core.uart.uartPackets.StoneStatePacket import StoneStatePac
 from crownstone_uart.core.uart.uartPackets.VoltageSamplesPacket import VoltageSamplesPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from crownstone_uart.topics.UsbTopics import UsbTopics
+from crownstone_uart.topics.UartTopics import UartTopics
 
 
 class UartParser:
@@ -104,7 +104,7 @@ class UartParser:
                 stringResult += chr(byte)
             # logStr = "LOG: %15.3f - %s" % (time.time(), stringResult)
             # print(logStr)
-            UartEventBus.emit(UsbTopics.uartMessage, {"string":stringResult, "data": dataPacket.payload})
+            UartEventBus.emit(UartTopics.uartMessage, {"string":stringResult, "data": dataPacket.payload})
         elif opCode == UartRxType.FIRMWARESTATE:
             # no need to process this, that's in the test suite.
             pass

@@ -1,6 +1,6 @@
 from enum import Enum
 
-class UsbTopics(Enum):
+class UartTopics(Enum):
 
     newDataAvailable = "UART_newDataAvailable"  # data is dictionary {
     #   id:                           int    # crownstone id (0-255)
@@ -12,7 +12,7 @@ class UsbTopics(Enum):
     #   powerUsageApparent:           int    # power usage in VA
     #   accumulatedEnergy:            int
     #   timestamp:                    int    # time on Crownstone seconds since epoch with locale correction
-    #   dimmerReady:             bool   # dimming is available for use (it is not in the first 60 seconds after boot)
+    #   dimmerReady:                  bool   # dimming is available for use (it is not in the first 60 seconds after boot)
     #   dimmingAllowed:               bool   # this Crownstone can dim
     #   switchLocked:                 bool   # this Crownstone is switch-locked
     #   hasError:                     bool   # this crownstone has an error, if the crownstone has an error, the errors: {} dict is only valid if errorMode: true. This boolean is always valid.

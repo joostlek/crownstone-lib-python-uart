@@ -1,6 +1,6 @@
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from crownstone_uart.topics.UsbTopics import UsbTopics
+from crownstone_uart.topics.UartTopics import UartTopics
 
 
 class StoneStateManager:
@@ -22,7 +22,7 @@ class StoneStateManager:
             self.emitNewData(stoneStatePacket)
     
     def emitNewData(self, stoneStatePacket):
-        UartEventBus.emit(UsbTopics.newDataAvailable, stoneStatePacket.getSummary())
+        UartEventBus.emit(UartTopics.newDataAvailable, stoneStatePacket.getSummary())
 
     def getIds(self):
         ids = []

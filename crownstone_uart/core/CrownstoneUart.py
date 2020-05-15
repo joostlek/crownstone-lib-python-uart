@@ -2,6 +2,7 @@
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 from crownstone_core.protocol.MeshPackets import StoneMultiSwitchPacket, MeshMultiSwitchPacket
+from crownstone_uart.core.modules.MeshHandler import MeshHandler
 
 from crownstone_uart.core.dataFlowManagers.StoneManager import StoneManager
 from crownstone_uart.core.modules.UsbDevHandler import UsbDevHandler
@@ -22,11 +23,14 @@ class CrownstoneUart:
         self.uartManager = UartManager()
         self.loop = asyncio.get_event_loop()
         self.stoneManager = StoneManager()
+
+        self.mesh = MeshHandler()
+
+        # only for development. Generally undocumented.
         self._usbDev = UsbDevHandler()
 
     def __del__(self):
         self.stop()
-
 
     async def initialize_usb(self, port = None, baudrate=230400):
         await self.uartManager.initialize()
@@ -34,13 +38,6 @@ class CrownstoneUart:
     def initialize_usb_sync(self, port = None, baudrate=230400):
         try:
             self.loop.run_until_complete(self.uartManager.initialize())
-        except:
-            self.stop()
-
-
-    def run_forever(self):
-        try:
-            self.loop.run_forever()
         except:
             self.stop()
 
@@ -56,30 +53,32 @@ class CrownstoneUart:
         :param on: Boolean
         :return:
         """
-        state = 1
         if not on:
-            state = 0
-
-        self.__switchCrownstone(crownstoneId, state)
-
-
-    def dimCrownstone(self, crownstoneId, value):
-        # dimming is used when the value is [0 .. 99], 100 is turning on the relay. We map 0..1 to 0..0.99
-        value = min(0.99, max(0,value) * 0.99)
-
-        self.__switchCrownstone(crownstoneId, value)
+            self.mesh.turnCrownstoneOff(crownstoneId)
+        else:
+            self.mesh.turnCrownstoneOn(crownstoneId)
 
 
-    def getCrownstoneIds(self):
+    def dim_crownstone(self, crownstoneId, value):
+        """
+        :param crownstoneId:
+        :param switchState: 0 .. 1
+        :return:
+        """
+
+        self.mesh.setCrownstoneSwitchState(crownstoneId, value)
+
+
+    def get_crownstone_ids(self):
         return self.stoneManager.getIds()
 
-    def getCrownstones(self):
+    def get_crownstones(self):
         return self.stoneManager.getStones()
 
-    def isRunning(self):
+    def is_running(self):
         return self.running
 
-    def uartEcho(self, payloadString):
+    def uart_echo(self, payloadString):
         # wrap that in a control packet
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).getPacket()
 
@@ -90,28 +89,3 @@ class CrownstoneUart:
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     # MARK: Private
-
-    def __switchCrownstone(self, crownstoneId, value):
-        """
-        :param crownstoneId:
-        :param value: 0 .. 1
-        :return:
-        """
-
-        # forcibly map the input from [any .. any] to [0 .. 1]
-        correctedValue = min(1,max(0,value))
-
-        # create a stone switch state packet to go into the multi switch
-        stoneSwitchPacket     = StoneMultiSwitchPacket(crownstoneId, correctedValue)
-
-        # wrap it in a mesh multi switch packet
-        meshMultiSwitchPacket = MeshMultiSwitchPacket([stoneSwitchPacket]).getPacket()
-
-        # wrap that in a control packet
-        controlPacket         = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).getPacket()
-
-        # finally wrap it in an Uart packet
-        uartPacket            = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
-
-        # send over uart
-        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)

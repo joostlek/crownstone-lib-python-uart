@@ -42,10 +42,8 @@ class UartManager:
 
     async def _attemptConnection(self, index):
         attemptingPort = self._availablePorts[index]
-        print("Attempting to connect to ", attemptingPort.device)
         self._uartBridge = UartBridge(attemptingPort.device, self.baudRate)
         self._uartBridge.start()
-
         await asyncio.sleep(0.5)
         
         success = await self._uartBridge.handshake()

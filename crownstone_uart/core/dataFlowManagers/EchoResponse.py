@@ -1,7 +1,7 @@
 import asyncio
 
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.topics.UsbTopics import UsbTopics
+from crownstone_uart.topics.UartTopics import UartTopics
 
 class EchoResponse:
     
@@ -9,7 +9,7 @@ class EchoResponse:
         self.response = None
         self.timeout = timeout
         self.interval = interval
-        self.handshakeId = UartEventBus.subscribe(UsbTopics.uartMessage, self.handleReply)
+        self.handshakeId = UartEventBus.subscribe(UartTopics.uartMessage, self.handleReply)
 
     def __del__(self):
         UartEventBus.unsubscribe(self.handshakeId)

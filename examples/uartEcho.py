@@ -5,9 +5,7 @@
 import time
 
 # Create new instance of uart
-from core.UartEventBus import UartEventBus
-from crownstone_uart.core.CrownstoneUart import CrownstoneUart
-from topics.UsbTopics import UsbTopics
+from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 uart = CrownstoneUart()
 
@@ -21,7 +19,7 @@ def showUartMessage(data):
 	print("Received payload", data)
 
 # Set up event listeners
-UartEventBus.subscribe(UsbTopics.uartMessage, showUartMessage)
+UartEventBus.subscribe(UartTopics.uartMessage, showUartMessage)
 
 # the try except part is just to catch a control+c, time.sleep does not appreciate being killed.
 try:

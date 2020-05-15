@@ -5,7 +5,7 @@
 import time
 
 # Create new instance of Bluenet
-from crownstone_uart.core.CrownstoneUart import CrownstoneUart
+from crownstone_uart import CrownstoneUart
 
 uart = CrownstoneUart()
 
