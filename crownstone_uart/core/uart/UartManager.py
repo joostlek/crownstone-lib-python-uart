@@ -28,7 +28,7 @@ class UartManager:
             self._uartBridge.stop_sync()
 
 
-    async def initialize(self):
+    async def initialize(self, port = None, baudrate = 230400):
         if self._trackingLoop is None:
             self._trackingLoop = asyncio.get_running_loop()
 

@@ -21,7 +21,7 @@ print("Listening for Crownstones on the mesh, this might take a while.")
 try:
 	while uart.running:
 		time.sleep(2)
-		ids = uart.getCrownstoneIds()
+		ids = uart.get_crownstone_ids()
 		print("Crownstone IDs seen so far:", ids)
 except KeyboardInterrupt:
 	print("Closing example.... Thanks for your time!")

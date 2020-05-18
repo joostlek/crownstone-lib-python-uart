@@ -33,11 +33,11 @@ class CrownstoneUart:
         self.stop()
 
     async def initialize_usb(self, port = None, baudrate=230400):
-        await self.uartManager.initialize()
+        await self.uartManager.initialize(port, baudrate)
 
     def initialize_usb_sync(self, port = None, baudrate=230400):
         try:
-            self.loop.run_until_complete(self.uartManager.initialize())
+            self.loop.run_until_complete(self.uartManager.initialize(port, baudrate))
         except:
             self.stop()
 
@@ -47,7 +47,7 @@ class CrownstoneUart:
         self.running = False
 
     #
-    def switchCrownstone(self, crownstoneId, on):
+    def switch_crownstone(self, crownstoneId, on):
         """
         :param crownstoneId:
         :param on: Boolean

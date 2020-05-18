@@ -17,7 +17,7 @@ def showNewData(data):
 	print("-------------------")
 
 	print("PING!")
-	uart.uartEcho("PONG!")
+	uart.uart_echo("PONG!")
 
 def showUartMessage(data):
 	print("Received Uart Message " + data["string"])

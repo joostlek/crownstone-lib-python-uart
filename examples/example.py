@@ -44,7 +44,7 @@ try:
 			print("Switching Crownstone on  (iteration: ", i,")")
 		else:
 			print("Switching Crownstone off (iteration: ", i,")")
-		uart.switchCrownstone(targetCrownstoneId, on = switchState)
+		uart.switch_crownstone(targetCrownstoneId, on = switchState)
 
 		switchState = not switchState
 		time.sleep(2)
