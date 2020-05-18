@@ -1,6 +1,5 @@
 from crownstone_core.util.Conversion import Conversion
-
-from util.UartUtil import UartUtil
+from crownstone_uart.util.UartUtil import UartUtil
 
 ESCAPE_TOKEN = 0x5c
 BIT_FLIP_MASK = 0x40

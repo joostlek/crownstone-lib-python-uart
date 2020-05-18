@@ -6,7 +6,7 @@ from crownstone_uart.core.uart.uartPackets.UartPacket import PREFIX_SIZE, OPCODE
     UartPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from util.UartUtil import UartUtil
+from crownstone_uart.util.UartUtil import UartUtil
 
 
 class UartReadBuffer:
