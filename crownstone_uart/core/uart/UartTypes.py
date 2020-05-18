@@ -32,6 +32,8 @@ class UartRxType(IntEnum):
 	MESH_SERVICE_DATA =                102
 	EXTERNAL_STATE_PART_0 =			   103
 	EXTERNAL_STATE_PART_1 =			   104
+	MESH_RESULT = 					   105
+	MESH_ACK_ALL_RESULT = 		       106
 
 	ADVERTISING_ENABLED =              10000
 	MESH_ENABLED =                     10001

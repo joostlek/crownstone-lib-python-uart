@@ -21,18 +21,20 @@ from crownstone_uart.topics.UartTopics import UartTopics
 class UartParser:
     
     def __init__(self):
-        UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
+        self.uartSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
+
+    def stop(self):
+        UartEventBus.unsubscribe(self.uartSubscription)
 
     def parse(self, dataPacket):
         opCode = dataPacket.opCode
         parsedData = None
-
-        if opCode != UartRxType.OWN_SERVICE_DATA:
+        if opCode == UartRxType.OWN_SERVICE_DATA:
             # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
             pass
         elif opCode == UartRxType.RESULT_PACKET:
             packet = ResultPacket(dataPacket.payload)
-            UartEventBus.emit(SystemTopics.resultPacket, ResultPacket)
+            UartEventBus.emit(SystemTopics.resultPacket, packet)
 
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
@@ -108,7 +110,6 @@ class UartParser:
             for byte in dataPacket.payload:
                 stringResult += chr(byte)
             # logStr = "LOG: %15.3f - %s" % (time.time(), stringResult)
-            # print(logStr)
             UartEventBus.emit(UartTopics.uartMessage, {"string":stringResult, "data": dataPacket.payload})
         elif opCode == UartRxType.FIRMWARESTATE:
             # no need to process this, that's in the test suite.
@@ -119,7 +120,14 @@ class UartParser:
         elif opCode == UartRxType.EXTERNAL_STATE_PART_1:
             # no need to process this, that's in the test suite.
             pass
-
+        elif opCode == UartRxType.MESH_RESULT:
+            if len(dataPacket.payload) > 1:
+                crownstoneId = dataPacket.payload[0]
+                packet = ResultPacket(dataPacket.payload[1:])
+                UartEventBus.emit(SystemTopics.meshResultPacket, [crownstoneId, packet])
+        elif opCode == UartRxType.MESH_ACK_ALL_RESULT:
+            packet = ResultPacket(dataPacket.payload)
+            UartEventBus.emit(SystemTopics.meshResultFinalPacket, packet)
         else:
             print("Unknown OpCode", opCode)
 

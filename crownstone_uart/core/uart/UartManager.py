@@ -29,8 +29,15 @@ class UartManager:
 
 
     async def initialize(self, port = None, baudrate = 230400):
-        self.port = port
         self.baudRate = baudrate
+
+        if port is not None:
+            index = 0
+            for testPort in self._availablePorts:
+                if port == testPort.device:
+                    self._attemptingIndex = index
+                    break
+                index += 1
 
         if self._trackingLoop is None:
             self._trackingLoop = asyncio.get_running_loop()
@@ -43,12 +50,13 @@ class UartManager:
             else:
                 await self._attemptConnection(self._attemptingIndex)
 
+
     async def _attemptConnection(self, index):
         attemptingPort = self._availablePorts[index]
         self._uartBridge = UartBridge(attemptingPort.device, self.baudRate)
         self._uartBridge.start()
-        await asyncio.sleep(0.5)
-        
+        await self._uartBridge.starting()
+
         success = await self._uartBridge.handshake()
 
         if not success:

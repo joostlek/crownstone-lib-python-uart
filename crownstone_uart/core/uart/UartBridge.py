@@ -5,9 +5,10 @@ import serial
 import serial.tools.list_ports
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
+from crownstone_uart.topics.UartTopics import UartTopics
 
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.dataFlowManagers.EchoResponse import EchoResponse
+from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.uart.UartParser import UartParser
 from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
 from crownstone_uart.core.uart.UartTypes import UartTxType
@@ -22,13 +23,11 @@ class UartBridge (threading.Thread):
         self.port = port
 
         self.serialController = None
+        self.started = False
         self.parser = None
         self.eventId = 0
 
         self.running = True
-
-        self.start_serial()
-
         if self.running:
             threading.Thread.__init__(self)
 
@@ -36,10 +35,14 @@ class UartBridge (threading.Thread):
         self.stop_sync()
 
     async def handshake(self):
-        collector = EchoResponse(0.2)
+        collector = Collector(timeout=0.2)
         handshake = "HelloCrownstone"
+
+        handshakeId = UartEventBus.subscribe(UartTopics.uartMessage, collector.collect)
         self.echo(handshake)
-        reply = await collector.collect()
+        reply = await collector.receive()
+        UartEventBus.unsubscribe(handshakeId)
+
         if reply is not None:
             if "string" in reply:
                 return reply["string"] == handshake
@@ -51,17 +54,22 @@ class UartBridge (threading.Thread):
         self.write_to_uart(uartPacket)
 
 
+    async def starting(self):
+        counter = 0
+        while not self.started and counter < 2:
+            counter += 0.2
+            await asyncio.sleep(0.02)
+
     def run(self):
+        self.start_serial()
         self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
-
-        UartEventBus.subscribe(SystemTopics.cleanUp, lambda x: self.stop())
-
         self.parser = UartParser()
         self.start_reading()
     #
     def stop_sync(self):
         # print("Stopping UartBridge")
         self.running = False
+        self.parser.stop()
         UartEventBus.unsubscribe(self.eventId)
 
     async def stop(self):
@@ -83,29 +91,32 @@ class UartBridge (threading.Thread):
             self.serialController.baudrate = int(self.baudrate)
             self.serialController.timeout = 0.25
             self.serialController.open()
-        except KeyboardInterrupt:
+        except OSError or serial.SerialException or KeyboardInterrupt:
             self.stop_sync()
 
 
     def start_reading(self):
         readBuffer = UartReadBuffer()
+        self.started = True
         # print("Read starting on serial port.")
         try:
             while self.running:
-                bytes = self.serialController.read()
-                if bytes:
+                bytesFromSerial = self.serialController.read()
+                if bytesFromSerial:
                     # clear out the entire read buffer
                     if self.serialController.in_waiting > 0:
                         additionalBytes = self.serialController.read(self.serialController.in_waiting)
-                        bytes = bytes + additionalBytes
-                    readBuffer.addByteArray(bytes)
+                        bytesFromSerial = bytesFromSerial + additionalBytes
+                    readBuffer.addByteArray(bytesFromSerial)
 
             # print("Cleaning up UartBridge")
-        except serial.SerialException as err:
+        except OSError or serial.SerialException:
             print("Connection Failed. Retrying...")
         except KeyboardInterrupt:
             self.running = False
             print("Closing serial connection.")
+
+        self.started = False
         self.serialController.close()
         self.serialController = None
 

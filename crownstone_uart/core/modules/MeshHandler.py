@@ -1,9 +1,13 @@
+import asyncio
+from datetime import datetime
 from typing import List
 
 from crownstone_core import Conversion
 from crownstone_core.protocol.BlePackets import ControlPacket, ControlStateSetPacket
-from crownstone_core.protocol.BluenetTypes import ControlType, StateType
-from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket
+from crownstone_core.protocol.BluenetTypes import ControlType, StateType, ResultValue
+from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket, MeshSetState
+
+from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.UartEventBus import UartEventBus
 
 from crownstone_uart.core.uart.UartTypes import UartTxType
@@ -62,7 +66,7 @@ class MeshHandler:
     def send_no_op(self):
         pass
 
-    async def set_ibeacon_uuid(self, crownstoneId: int, uuid: str, index: int = 0):
+    async def set_ibeacon_uuid(self, crownstoneId: int, uuid: str, index: int = 0) -> bool:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param uuid:  string: "d8b094e7-569c-4bc6-8637-e11ce4221c18"
@@ -72,9 +76,9 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_UUID, index)
         statePacket.loadByteArray(Conversion.ibeaconUUIDString_to_reversed_uint8_array(uuid))
-        await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
-    async def set_ibeacon_major(self, crownstoneId: int, major: int, index: int = 0):
+    async def set_ibeacon_major(self, crownstoneId: int, major: int, index: int = 0) -> bool:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param major:  int: uint16 0-65535
@@ -84,9 +88,9 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MAJOR, index)
         statePacket.loadUInt16(major)
-        await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
-    async def set_ibeacon_minor(self, crownstoneId: int, minor: int, index: int = 0):
+    async def set_ibeacon_minor(self, crownstoneId: int, minor: int, index: int = 0) -> bool:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param minor:  int: uint16 0-65535
@@ -96,7 +100,7 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MINOR, index)
         statePacket.loadUInt16(minor)
-        await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
 
     async def periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index, interval_seconds, offset_seconds):
@@ -131,10 +135,28 @@ class MeshHandler:
         """
         pass
 
-    async def _set_state_via_mesh_acked(self, crownstoneId: int, packet: bytearray):
+    async def _set_state_via_mesh_acked(self, crownstoneId: int, packet: bytearray) -> bool:
         # 1:1 message to N crownstones with acks (only N = 1 supported for now)
         # flag value: 2
-        pass
+        corePacket    = MeshSetState(crownstoneId, packet).getPacket()
+        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
+        uartPacket    = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+
+        collector = Collector()
+
+        resultListener = UartEventBus.subscribe(SystemTopics.meshResultPacket, collector.collect)
+        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
+        data = await collector.receive()
+        UartEventBus.unsubscribe(resultListener)
+
+        if data is not None:
+            if data[0] == crownstoneId and data[1].resultCode == ResultValue.SUCCESS:
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
     def _command_via_mesh_broadcast(self, packet: bytearray):
         # this is only for time and noop
@@ -142,7 +164,7 @@ class MeshHandler:
         # value: 1
         pass
 
-    def _command_via_mesh_broadcast_acked(self, crownstone_uid_array: List[int], packet: bytearray):
+    def _command_via_mesh_broadcast_acked(self, crownstone_uid_array: List[int], packet: bytearray) -> bool:
         # this is only for the set_iBeacon_config_id
         # broadcast to all, but retry until ID's in list have acked or timeout
         # value: 3
