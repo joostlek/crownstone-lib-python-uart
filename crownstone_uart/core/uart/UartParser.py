@@ -2,6 +2,7 @@ import sys
 
 import time
 
+from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.util.Conversion import Conversion
 
@@ -26,10 +27,14 @@ class UartParser:
         opCode = dataPacket.opCode
         parsedData = None
 
-        # if opCode != UartRxType.OWN_SERVICE_DATA:
-        #     print("UART - opCode:", opCode, "payload:", dataPacket.payload)
+        if opCode != UartRxType.OWN_SERVICE_DATA:
+            # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
+            pass
+        elif opCode == UartRxType.RESULT_PACKET:
+            packet = ResultPacket(dataPacket.payload)
+            UartEventBus.emit(SystemTopics.resultPacket, ResultPacket)
 
-        if opCode == UartRxType.MESH_SERVICE_DATA:
+        elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
             serviceData = ServiceData(dataPacket.payload, unencrypted=True)
             statePacket = StoneStatePacket(serviceData)

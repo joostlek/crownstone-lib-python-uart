@@ -6,6 +6,7 @@ import time, json
 
 
 # Function that's called when the power usage is updated.
+
 from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 
@@ -14,8 +15,6 @@ def showNewData(data):
 	print(json.dumps(data, indent=2))
 	print("-------------------")
 
-# Create new instance of Bluenet
-from crownstone_uart.core.CrownstoneUart import CrownstoneUart
 
 uart = CrownstoneUart()
 

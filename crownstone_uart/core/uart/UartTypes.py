@@ -26,6 +26,7 @@ class UartTxType(IntEnum):
 
 class UartRxType(IntEnum):
 	ACK =                              0
+	RESULT_PACKET =                    1
 	OWN_SERVICE_DATA =                 2
 	UART_MESSAGE =                     3
 	MESH_SERVICE_DATA =                102

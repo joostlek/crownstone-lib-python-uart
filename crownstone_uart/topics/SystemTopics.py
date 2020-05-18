@@ -7,3 +7,4 @@ class SystemTopics(Enum):
     uartNewPackage = 'uartNewPackage'  # used for Ready Packets. This comes from the UartReadBuffer and data is a UartPacket.
     uartWriteData = 'uartWriteData'  # used to write to the UART. Data is array of bytes.
     cleanUp = 'cleanUp'  # used to propagate CTRL+C throughout the modules.
+    resultPacket = 'resultPacket'  # data is a ResultPacket class instance
