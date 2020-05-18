@@ -83,7 +83,7 @@ class UartBridge (threading.Thread):
             self.serialController.baudrate = int(self.baudrate)
             self.serialController.timeout = 0.25
             self.serialController.open()
-        except:
+        except KeyboardInterrupt:
             self.stop_sync()
 
 
@@ -103,6 +103,9 @@ class UartBridge (threading.Thread):
             # print("Cleaning up UartBridge")
         except serial.SerialException as err:
             print("Connection Failed. Retrying...")
+        except KeyboardInterrupt:
+            self.running = False
+            print("Closing serial connection.")
         self.serialController.close()
         self.serialController = None
 

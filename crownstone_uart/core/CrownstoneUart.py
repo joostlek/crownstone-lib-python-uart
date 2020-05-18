@@ -38,7 +38,7 @@ class CrownstoneUart:
     def initialize_usb_sync(self, port = None, baudrate=230400):
         try:
             self.loop.run_until_complete(self.uartManager.initialize(port, baudrate))
-        except:
+        except KeyboardInterrupt:
             self.stop()
 
     def stop(self):
