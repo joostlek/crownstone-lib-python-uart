@@ -29,6 +29,9 @@ class UartManager:
 
 
     async def initialize(self, port = None, baudrate = 230400):
+        self.port = port
+        self.baudRate = baudrate
+
         if self._trackingLoop is None:
             self._trackingLoop = asyncio.get_running_loop()
 
