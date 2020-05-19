@@ -79,7 +79,7 @@ class MeshHandler:
         await self._command_via_mesh_broadcast(no_op_packet.getPacket())
 
 
-    async def set_ibeacon_uuid(self, crownstoneId: int, uuid: str, index: int = 0) -> bool:
+    async def set_ibeacon_uuid(self, crownstoneId: int, uuid: str, index: int = 0) -> MeshResult:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param uuid:  string: "d8b094e7-569c-4bc6-8637-e11ce4221c18"
@@ -92,7 +92,7 @@ class MeshHandler:
         return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
 
-    async def set_ibeacon_major(self, crownstoneId: int, major: int, index: int = 0) -> bool:
+    async def set_ibeacon_major(self, crownstoneId: int, major: int, index: int = 0) -> MeshResult:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param major:  int: uint16 0-65535
@@ -105,7 +105,7 @@ class MeshHandler:
         return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
 
-    async def set_ibeacon_minor(self, crownstoneId: int, minor: int, index: int = 0) -> bool:
+    async def set_ibeacon_minor(self, crownstoneId: int, minor: int, index: int = 0) -> MeshResult:
         """
         :param crownstoneId: int crownstoneUid, 1-255
         :param minor:  int: uint16 0-65535
@@ -118,7 +118,7 @@ class MeshHandler:
         return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
 
 
-    async def periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0):
+    async def periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0) -> MeshResult:
         """
         You need to have 2 stored ibeacon payloads (state index 0 and 1) in order for this to work. This can be done by the set_ibeacon methods
         available in this class.

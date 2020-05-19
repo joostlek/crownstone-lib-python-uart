@@ -1,7 +1,6 @@
 # import signal  # used to catch control C
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
-from crownstone_core.protocol.MeshPackets import StoneMultiSwitchPacket, MeshMultiSwitchPacket
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
 
 from crownstone_uart.core.dataFlowManagers.StoneManager import StoneManager
@@ -54,9 +53,9 @@ class CrownstoneUart:
         :return:
         """
         if not on:
-            self.mesh.turnCrownstoneOff(crownstoneId)
+            self.mesh.turn_crownstone_off(crownstoneId)
         else:
-            self.mesh.turnCrownstoneOn(crownstoneId)
+            self.mesh.turn_crownstone_on(crownstoneId)
 
 
     def dim_crownstone(self, crownstoneId, value):
@@ -66,7 +65,7 @@ class CrownstoneUart:
         :return:
         """
 
-        self.mesh.setCrownstoneSwitchState(crownstoneId, value)
+        self.mesh.set_crownstone_switch_state(crownstoneId, value)
 
 
     def get_crownstone_ids(self):
@@ -87,5 +86,3 @@ class CrownstoneUart:
 
         # send over uart
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
-
-    # MARK: Private
