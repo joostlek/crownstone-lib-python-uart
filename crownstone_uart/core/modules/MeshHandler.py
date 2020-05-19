@@ -163,12 +163,22 @@ class MeshHandler:
         initialResult = await self._command_via_mesh_broadcast_acked(crownstone_uid_array, ibeaconConfigPacketStart)
 
         meshResult.merge(initialResult)
-        successfulIds = meshResult.getSuccessfulIds()
+        successfulIds = meshResult.get_successful_ids()
         if len(successfulIds) == 0:
             return meshResult
 
         secondResult = await self._command_via_mesh_broadcast_acked(successfulIds, ibeaconConfigPacketFinish)
+
+        # if we succeeded in the initial phase, we should be able to finish the second case.
+        failed_second_part = meshResult.compare_get_failed(secondResult)
+        iterations = 0
+        while len(failed_second_part) > 0 and iterations < 5:
+            secondResult = await self._command_via_mesh_broadcast_acked(failed_second_part, ibeaconConfigPacketFinish)
+            failed_second_part = meshResult.compare_get_failed(secondResult)
+            iterations += 1
+
         meshResult.merge(secondResult)
+        meshResult.conclude()
 
         return meshResult
 
@@ -210,7 +220,7 @@ class MeshHandler:
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
         uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
 
-        resultCollector     = Collector(timeout=2, topic=SystemTopics.resultPacket)
+        resultCollector = Collector(timeout=2, topic=SystemTopics.resultPacket)
 
         # send the message to the Crownstone
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
@@ -257,32 +267,21 @@ class MeshHandler:
 
 
     async def _handleCollectors(self, crownstone_uid_array: List[int], individualCollector: BatchCollector, finalCollector: Collector) -> MeshResult:
-        resultArray = {}
-        for uid in crownstone_uid_array:
-            resultArray[uid] = False
+        meshResult = MeshResult(crownstone_uid_array)
 
         # await the amount of times we have ID's to deliver the message to
         for uid in crownstone_uid_array:
             individualData = await individualCollector.receive()
             if individualData is not None:
-                target_uid = individualData[0]
-                if target_uid in resultArray:
-                    resultArray[target_uid] = individualData[1].resultCode == ResultValue.SUCCESS
+                meshResult.collect_ack(individualData[0], individualData[1].resultCode == ResultValue.SUCCESS)
             individualCollector.clear()
 
         individualCollector.cleanup()
 
         finalData = await finalCollector.receive()
-
-        result = MeshResult()
-        result.acks = resultArray
-
         if finalData is not None:
-            if finalData.resultCode == ResultValue.SUCCESS:
-                result.success = True
-            else:
-                result.success = False
-        else:
-            result.success = False
+            meshResult.resultCode = finalData.resultCode
 
-        return result
+        meshResult.conclude()
+
+        return meshResult
