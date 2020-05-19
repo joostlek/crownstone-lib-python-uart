@@ -31,22 +31,21 @@ class UartBridge (threading.Thread):
         if self.running:
             threading.Thread.__init__(self)
 
+
     def __del__(self):
         self.stop_sync()
 
-    async def handshake(self):
-        collector = Collector(timeout=0.2)
-        handshake = "HelloCrownstone"
 
-        handshakeId = UartEventBus.subscribe(UartTopics.uartMessage, collector.collect)
-        self.echo(handshake)
+    async def handshake(self):
+        collector = Collector(timeout=0.2, topic=UartTopics.uartMessage)
+        self.echo("HelloCrownstone")
         reply = await collector.receive()
-        UartEventBus.unsubscribe(handshakeId)
 
         if reply is not None:
             if "string" in reply:
-                return reply["string"] == handshake
+                return reply["string"] == "HelloCrownstone"
         return False
+
 
     def echo(self, string):
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(string).getPacket()
@@ -65,12 +64,14 @@ class UartBridge (threading.Thread):
         self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
         self.parser = UartParser()
         self.start_reading()
-    #
+
+
     def stop_sync(self):
         # print("Stopping UartBridge")
         self.running = False
         self.parser.stop()
         UartEventBus.unsubscribe(self.eventId)
+
 
     async def stop(self):
         self.stop_sync()
@@ -79,10 +80,12 @@ class UartBridge (threading.Thread):
             counter += 0.1
             await asyncio.sleep(0.1)
 
+
     async def isAlive(self):
         while self.serialController is not None and self.running:
             await asyncio.sleep(0.1)
-    #
+
+
     def start_serial(self):
         # print("Initializing serial on port ", self.port, ' with baudrate ', self.baudrate)
         try:
@@ -92,11 +95,13 @@ class UartBridge (threading.Thread):
             self.serialController.timeout = 0.25
             self.serialController.open()
         except OSError or serial.SerialException or KeyboardInterrupt:
+            print("HERE")
             self.stop_sync()
 
 
     def start_reading(self):
         readBuffer = UartReadBuffer()
+        print("Started")
         self.started = True
         # print("Read starting on serial port.")
         try:
@@ -121,7 +126,7 @@ class UartBridge (threading.Thread):
         self.serialController = None
 
     def write_to_uart(self, data):
-        if self.serialController is not None:
+        if self.serialController is not None and self.started:
             self.serialController.write(data)
         else:
             self.stop_sync()

@@ -29,6 +29,7 @@ class UartParser:
     def parse(self, dataPacket):
         opCode = dataPacket.opCode
         parsedData = None
+        # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
         if opCode == UartRxType.OWN_SERVICE_DATA:
             # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
             pass
