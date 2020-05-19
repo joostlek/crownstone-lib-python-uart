@@ -7,7 +7,7 @@ print(find_packages(exclude=["examples"]))
 
 setup(
     name='crownstone-lib-python-uart',
-    version='0.0.0',
+    version='0.5.0',
     packages=find_packages(exclude=["examples"]),
     install_requires=list(package.strip() for package in open('requirements.txt')),
     classifiers=[
