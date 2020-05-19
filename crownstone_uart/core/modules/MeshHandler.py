@@ -143,7 +143,7 @@ class MeshHandler:
         return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, ibeaconConfigPacket)
 
 
-    async def stop_ibeacon_interval_and_set_index(self, crownstone_uid_array: List[int], index):
+    async def stop_ibeacon_interval_and_set_index(self, crownstone_uid_array: List[int], index) -> MeshResult:
         """
         This method stops the interleaving for the specified ibeacon payload at that index.
         :param crownstone_uid_array:
@@ -158,25 +158,19 @@ class MeshHandler:
         ibeaconConfigPacketStart  = ControlPacketsGenerator.getIBeaconConfigIdPacket(indexToStartWith, 0, 0)
         ibeaconConfigPacketFinish = ControlPacketsGenerator.getIBeaconConfigIdPacket(indexToEndWith,   0, 0)
 
-        resultArray = {}
-        for uid in crownstone_uid_array:
-            resultArray[uid] = False
+        meshResult = MeshResult(crownstone_uid_array)
 
         initialResult = await self._command_via_mesh_broadcast_acked(crownstone_uid_array, ibeaconConfigPacketStart)
-        secondPartArray = []
-        for uid in crownstone_uid_array:
-            resultArray[uid] = initialResult.acks[uid]
-            if initialResult.acks[uid]:
-                secondPartArray.append(uid)
 
-        if len(secondPartArray) == 0:
-            return resultArray
+        meshResult.merge(initialResult)
+        successfulIds = meshResult.getSuccessfulIds()
+        if len(successfulIds) == 0:
+            return meshResult
 
-        secondResult = await self._command_via_mesh_broadcast_acked(secondPartArray, ibeaconConfigPacketFinish)
-        for uid in secondPartArray:
-            resultArray[uid] = secondResult.acks[uid]
+        secondResult = await self._command_via_mesh_broadcast_acked(successfulIds, ibeaconConfigPacketFinish)
+        meshResult.merge(secondResult)
 
-        return resultArray
+        return meshResult
 
 
     async def _set_state_via_mesh_acked(self, crownstoneId: int, packet: bytearray) -> MeshResult:
