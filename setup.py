@@ -2,15 +2,20 @@
 
 from setuptools import setup, find_packages
 
-
-print(find_packages(exclude=["examples"]))
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
 setup(
     name='crownstone-lib-python-uart',
-    version='0.5.0',
-    packages=find_packages(exclude=["examples"]),
+    version='0.5.1',
+    packages=find_packages(exclude=["examples","testing"]),
+    author="Crownstone B.V.",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/crownstone/crownstone-lib-python-uart",
     install_requires=list(package.strip() for package in open('requirements.txt')),
     classifiers=[
         'Programming Language :: Python :: 3.7'
-    ]
+    ],
+    python_requires='>=3.7',
 )

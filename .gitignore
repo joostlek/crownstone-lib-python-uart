@@ -5,4 +5,5 @@ dist
 build
 crownstone_lib_python_uart.egg-info
 
-testing 
+testing
+release.sh
