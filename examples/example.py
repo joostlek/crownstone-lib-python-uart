@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
 
-"""An example that switches a Crownstone, and prints the power usage of all Crownstones."""
+"""An example that switches a Crownstone, and prints the power usage of the selected Crownstone."""
 
-import time, json
-
-
-# Function that's called when the power usage is updated.
-
+import time
 from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 
+# This is the id of the Crownstone we will be switching
+# change it to match the Crownstone Id you want to switch!
+targetCrownstoneId = 3
+
 def showNewData(data):
-	print("New data received!")
-	print(json.dumps(data, indent=2))
-	print("-------------------")
+	global targetCrownstoneId
+	if data["id"] == targetCrownstoneId:
+		print("New data received!")
+		print("PowerUsage of crownstone", data["id"], data["powerUsageReal"])
+		print("-------------------")
 
 
 uart = CrownstoneUart()
@@ -25,10 +27,6 @@ uart.initialize_usb_sync()
 
 # Set up event listeners
 UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
-
-# This is the id of the Crownstone we will be switching
-# change it to match the Crownstone Id you want to switch!
-targetCrownstoneId = 3
 
 # Switch this Crownstone on and off.
 switchState = True

@@ -74,9 +74,6 @@ class CrownstoneUart:
     def get_crownstones(self):
         return self.stoneManager.getStones()
 
-    def is_running(self):
-        return self.running
-
     def uart_echo(self, payloadString):
         # wrap that in a control packet
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).getPacket()

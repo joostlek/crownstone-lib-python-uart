@@ -23,36 +23,36 @@ class MeshHandler:
         pass
 
 
-    def turn_crownstone_on(self, crownstoneId):
-        self._switch_crownstone(crownstoneId, 255)
+    def turn_crownstone_on(self, crownstone_id: int):
+        self._switch_crownstone(crownstone_id, 255)
 
 
-    def turn_crownstone_off(self, crownstoneId):
-        self._switch_crownstone(crownstoneId, 0)
+    def turn_crownstone_off(self, crownstone_id: int):
+        self._switch_crownstone(crownstone_id, 0)
 
 
-    def set_crownstone_switch_state(self, crownstoneId, switchState):
+    def set_crownstone_switch_state(self, crownstone_id: int, switch_state: float):
         """
-        :param crownstoneId:
-        :param switchState: 0 .. 1
+        :param crownstone_id:
+        :param switch_state: 0 .. 1
         :return:
         """
 
         # forcibly map the input from [any .. any] to [0 .. 1]
-        correctedValue = min(1, max(0, switchState))
+        correctedValue = min(1.0, max(0.0, switch_state))
 
-        self._switch_crownstone(crownstoneId, correctedValue)
+        self._switch_crownstone(crownstone_id, correctedValue)
 
 
-    def _switch_crownstone(self,crownstoneId, switchState):
+    def _switch_crownstone(self,crownstone_id, switch_state):
         """
-        :param crownstoneId:
-        :param switchState: 0 .. 255
+        :param crownstone_id:
+        :param switch_state: 0 .. 1
         :return:
         """
 
         # create a stone switch state packet to go into the multi switch
-        stoneSwitchPacket = StoneMultiSwitchPacket(crownstoneId, switchState)
+        stoneSwitchPacket = StoneMultiSwitchPacket(crownstone_id, switch_state)
 
         # wrap it in a mesh multi switch packet
         meshMultiSwitchPacket = MeshMultiSwitchPacket([stoneSwitchPacket]).getPacket()
@@ -78,10 +78,9 @@ class MeshHandler:
         no_op_packet = ControlPacket(ControlType.NO_OPERATION)
         await self._command_via_mesh_broadcast(no_op_packet.getPacket())
 
-
-    async def set_ibeacon_uuid(self, crownstoneId: int, uuid: str, index: int = 0) -> MeshResult:
+    async def set_ibeacon_uuid(self, crownstone_id: int, uuid: str, index: int = 0) -> MeshResult:
         """
-        :param crownstoneId: int crownstoneUid, 1-255
+        :param crownstone_id: int crownstoneUid, 1-255
         :param uuid:  string: "d8b094e7-569c-4bc6-8637-e11ce4221c18"
         :param index: for the normal uuid, index = 0, when alternating you also need to define 1 in a
                       followup command. Usually 0 has already been set by the setup procedure.
@@ -89,12 +88,12 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_UUID, index)
         statePacket.loadByteArray(Conversion.ibeaconUUIDString_to_reversed_uint8_array(uuid))
-        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
 
 
-    async def set_ibeacon_major(self, crownstoneId: int, major: int, index: int = 0) -> MeshResult:
+    async def set_ibeacon_major(self, crownstone_id: int, major: int, index: int = 0) -> MeshResult:
         """
-        :param crownstoneId: int crownstoneUid, 1-255
+        :param crownstone_id: int crownstoneUid, 1-255
         :param major:  int: uint16 0-65535
         :param index: for the normal uuid, index = 0, when alternating you also need to define 1 in a
                       followup command. Usually 0 has already been set by the setup procedure.
@@ -102,12 +101,12 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MAJOR, index)
         statePacket.loadUInt16(major)
-        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
 
 
-    async def set_ibeacon_minor(self, crownstoneId: int, minor: int, index: int = 0) -> MeshResult:
+    async def set_ibeacon_minor(self, crownstone_id: int, minor: int, index: int = 0) -> MeshResult:
         """
-        :param crownstoneId: int crownstoneUid, 1-255
+        :param crownstone_id: int crownstoneUid, 1-255
         :param minor:  int: uint16 0-65535
         :param index: for the normal uuid, index = 0, when alternating you also need to define 1 in a
                       followup command. Usually 0 has already been set by the setup procedure.
@@ -115,7 +114,7 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MINOR, index)
         statePacket.loadUInt16(minor)
-        return await self._set_state_via_mesh_acked(crownstoneId, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
 
 
     async def periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0) -> MeshResult:
@@ -183,10 +182,10 @@ class MeshHandler:
         return meshResult
 
 
-    async def _set_state_via_mesh_acked(self, crownstoneId: int, packet: bytearray) -> MeshResult:
+    async def _set_state_via_mesh_acked(self, crownstone_id: int, packet: bytearray) -> MeshResult:
         # 1:1 message to N crownstones with acks (only N = 1 supported for now)
         # flag value: 2
-        corePacket    = MeshSetStatePacket(crownstoneId, packet).getPacket()
+        corePacket    = MeshSetStatePacket(crownstone_id, packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
         uartPacket    = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
 
@@ -203,11 +202,11 @@ class MeshHandler:
         if commandResultData is not None:
             if commandResultData.resultCode is ResultValue.BUSY:
                 await asyncio.sleep(0.2)
-                return await self._set_state_via_mesh_acked(crownstoneId, packet)
+                return await self._set_state_via_mesh_acked(crownstone_id, packet)
             elif commandResultData.resultCode is not ResultValue.SUCCESS:
                 raise CrownstoneException(commandResultData.resultCode, "Command has failed.")
 
-        return await self._handleCollectors([crownstoneId], individualCollector, finalCollector)
+        return await self._handleCollectors([crownstone_id], individualCollector, finalCollector)
 
 
 

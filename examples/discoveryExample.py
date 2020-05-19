@@ -18,12 +18,13 @@ uart.initialize_usb_sync()
 print("Listening for Crownstones on the mesh, this might take a while.")
 
 # the try except part is just to catch a control+c, time.sleep does not appreciate being killed.
+initial_time = time.time()
 try:
 	while uart.running:
 		time.sleep(2)
 		ids = uart.get_crownstone_ids()
-		print("Crownstone IDs seen so far:", ids)
+		print("Crownstone IDs seen so far:", ids, "after", round(time.time() - initial_time), "seconds")
 except KeyboardInterrupt:
-	print("Closing example.... Thanks for your time!")
+	print("\nClosing example.... Thanks for your time!")
 
 uart.stop()
