@@ -3,7 +3,7 @@ test.py
 
 dist
 build
-crownstone_lib_python_uart.egg-info
+crownstone_uart.egg-info
 
 testing
 release.sh
