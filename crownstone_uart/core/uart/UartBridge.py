@@ -1,4 +1,5 @@
 import asyncio
+import os
 import threading
 
 import serial
@@ -60,9 +61,9 @@ class UartBridge (threading.Thread):
             await asyncio.sleep(0.02)
 
     def run(self):
-        self.start_serial()
-        self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
         self.parser = UartParser()
+        self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
+        self.start_serial()
         self.start_reading()
 
 
@@ -95,13 +96,11 @@ class UartBridge (threading.Thread):
             self.serialController.timeout = 0.25
             self.serialController.open()
         except OSError or serial.SerialException or KeyboardInterrupt:
-            print("HERE")
             self.stop_sync()
 
 
     def start_reading(self):
         readBuffer = UartReadBuffer()
-        print("Started")
         self.started = True
         # print("Read starting on serial port.")
         try:
