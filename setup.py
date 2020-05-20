@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='crownstone-lib-python-uart',
+    name='crownstone-uart',
     version='0.5.2',
     packages=find_packages(exclude=["examples","testing"]),
     author="Crownstone B.V.",

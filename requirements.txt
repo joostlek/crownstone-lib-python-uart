@@ -1,2 +1,2 @@
-crownstone-lib-python-core==0.5.1
+crownstone-core==0.5.1
 pyserial==3.4.0
