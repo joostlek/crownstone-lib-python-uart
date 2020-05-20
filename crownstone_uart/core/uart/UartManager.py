@@ -1,8 +1,7 @@
 import asyncio
-import serial
 
 from crownstone_uart.core.uart.UartBridge import UartBridge
-
+from serial.tools import list_ports
 
 class UartManager:
 
@@ -11,13 +10,13 @@ class UartManager:
         self.baudRate = baudRate
         self.running = True
         self._trackingLoop = None
-        self._availablePorts = serial.tools.list_ports.comports()
+        self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
 
     async def reset(self):
         self._attemptingIndex = 0
-        self._availablePorts = serial.tools.list_ports.comports()
+        self._availablePorts = list(list_ports.comports())
         self._uartBridge = None
         self.port = None
         await self.initialize()
@@ -30,7 +29,6 @@ class UartManager:
 
     async def initialize(self, port = None, baudrate = 230400):
         self.baudRate = baudrate
-
 
         if port is not None:
             found_port = False
