@@ -320,6 +320,8 @@ The library can be designed synchronously (blocking) or asynchronously (asyncio)
 #### `uart_echo(text: str)`
 > send a string command to the Crownstone. This will trigger a UartTopics.uartMessage event if a reply comes in.
 
+#### `is_ready()`
+> Returns True if the uart is ready for commands, False if not.
 
 ## CrownstoneUart Async API
 

@@ -13,12 +13,14 @@ class UartManager:
         self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
+        self.ready = False
 
     async def reset(self):
         self._attemptingIndex = 0
         self._availablePorts = list(list_ports.comports())
         self._uartBridge = None
         self.port = None
+
         await self.initialize()
 
     def stop(self):
@@ -29,6 +31,7 @@ class UartManager:
 
     async def initialize(self, port = None, baudrate = 230400):
         self.baudRate = baudrate
+        self.ready = False
 
         if port is not None:
             found_port = False
@@ -70,11 +73,13 @@ class UartManager:
         if not success:
             print("Crownstone handshake failed. Moving on to next device...")
             self._attemptingIndex += 1
+            self.ready = False
             await self._uartBridge.stop()
             await self.initialize()
         else:
             print("Connection established to", port)
             self.port = port
+            self.ready = True
             asyncio.create_task(self.trackConnection())
         
 
@@ -83,3 +88,6 @@ class UartManager:
         if self.running:
             asyncio.create_task(self.reset())
 
+
+    def is_ready(self) -> bool:
+        return self.ready

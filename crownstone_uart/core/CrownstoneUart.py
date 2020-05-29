@@ -31,6 +31,9 @@ class CrownstoneUart:
     def __del__(self):
         self.stop()
 
+    def is_ready(self) -> bool:
+        return self.uartManager.is_ready()
+
     async def initialize_usb(self, port = None, baudrate=230400):
         await self.uartManager.initialize(port, baudrate)
 
