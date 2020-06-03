@@ -31,8 +31,11 @@ class UartParser:
         parsedData = None
         # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
         if opCode == UartRxType.OWN_SERVICE_DATA:
-            # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
-            pass
+            # service data type + device type + data type + service data (15b)
+            serviceData = ServiceData(dataPacket.payload)
+            if serviceData.validData:
+                UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
+
         elif opCode == UartRxType.RESULT_PACKET:
             packet = ResultPacket(dataPacket.payload)
             UartEventBus.emit(SystemTopics.resultPacket, packet)

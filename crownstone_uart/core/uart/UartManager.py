@@ -5,11 +5,11 @@ from serial.tools import list_ports
 
 class UartManager:
 
-    def __init__(self, port = None, baudRate = 230400):
-        self.port = port
-        self.baudRate = baudRate
+    def __init__(self, loop = None):
+        self.port = None
+        self.baudRate = 230400
         self.running = True
-        self._trackingLoop = None
+        self._trackingLoop = loop
         self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
@@ -80,13 +80,13 @@ class UartManager:
             print("Connection established to", port)
             self.port = port
             self.ready = True
-            asyncio.create_task(self.trackConnection())
+            asyncio.ensure_future(self.trackConnection())
         
 
     async def trackConnection(self):
         await self._uartBridge.isAlive()
         if self.running:
-            asyncio.create_task(self.reset())
+            asyncio.ensure_future(self.reset())
 
 
     def is_ready(self) -> bool:

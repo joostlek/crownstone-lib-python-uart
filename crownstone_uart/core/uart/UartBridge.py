@@ -29,8 +29,8 @@ class UartBridge (threading.Thread):
         self.eventId = 0
 
         self.running = True
-        if self.running:
-            threading.Thread.__init__(self)
+        
+        threading.Thread.__init__(self)
 
 
     def __del__(self):

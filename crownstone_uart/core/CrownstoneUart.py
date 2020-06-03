@@ -19,8 +19,8 @@ class CrownstoneUart:
     def __init__(self):
         self.uartManager = None
         self.running = True
-        self.uartManager = UartManager()
         self.loop = asyncio.get_event_loop()
+        self.uartManager = UartManager(self.loop)
         self.stoneManager = StoneManager()
 
         self.mesh = MeshHandler()
