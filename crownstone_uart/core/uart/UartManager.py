@@ -44,6 +44,8 @@ class UartManager:
                 index += 1
             if not found_port:
                 return await self.setupConnection(port)
+            else:
+                await self._attemptConnection(self._attemptingIndex, False)
 
 
         if self._trackingLoop is None:
@@ -58,17 +60,19 @@ class UartManager:
                 await self._attemptConnection(self._attemptingIndex)
 
 
-    async def _attemptConnection(self, index):
+    async def _attemptConnection(self, index, handshake=True):
         attemptingPort = self._availablePorts[index]
-        await self.setupConnection(attemptingPort.device)
+        await self.setupConnection(attemptingPort.device, handshake)
 
 
-    async def setupConnection(self, port):
+    async def setupConnection(self, port, handshake=True):
         self._uartBridge = UartBridge(port, self.baudRate)
         self._uartBridge.start()
         await self._uartBridge.starting()
+        success = True
 
-        success = await self._uartBridge.handshake()
+        if handshake:
+            success = await self._uartBridge.handshake()
 
         if not success:
             print("Crownstone handshake failed. Moving on to next device...")

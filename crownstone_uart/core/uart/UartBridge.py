@@ -38,7 +38,7 @@ class UartBridge (threading.Thread):
 
 
     async def handshake(self):
-        collector = Collector(timeout=0.2, topic=UartTopics.uartMessage)
+        collector = Collector(timeout=0.25, topic=UartTopics.uartMessage)
         self.echo("HelloCrownstone")
         reply = await collector.receive()
 

@@ -1,6 +1,5 @@
-from enum import Enum
 
-class UartTopics(Enum):
+class UartTopics:
 
     newDataAvailable = "UART_newDataAvailable"  # data is dictionary {
     #   id:                           int    # crownstone id (0-255)

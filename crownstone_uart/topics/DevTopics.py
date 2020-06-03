@@ -1,6 +1,5 @@
-from enum import Enum
 
-class DevTopics(Enum):
+class DevTopics:
     newServiceData = "newServiceData"  # data is dictionary: {
                                        #                        "id": int
                                        #                        "opCode": int

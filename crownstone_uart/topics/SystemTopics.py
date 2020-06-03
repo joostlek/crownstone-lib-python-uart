@@ -1,7 +1,5 @@
-from enum import Enum
 
-
-class SystemTopics(Enum):
+class SystemTopics:
     newCrownstoneFound = "newCrownstoneFound"
     stateUpdate = "stateUpdate"  # used to propagate verified state messages through the system
     uartNewPackage = 'uartNewPackage'  # used for Ready Packets. This comes from the UartReadBuffer and data is a UartPacket.
