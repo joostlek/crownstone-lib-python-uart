@@ -1,5 +1,5 @@
 import sys
-
+import logging
 import time
 
 from crownstone_core.packets.ResultPacket import ResultPacket
@@ -17,6 +17,7 @@ from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 from crownstone_uart.topics.UartTopics import UartTopics
 
+_LOGGER = logging.getLogger(__name__)
 
 class UartParser:
     
@@ -133,7 +134,7 @@ class UartParser:
             packet = ResultPacket(dataPacket.payload)
             UartEventBus.emit(SystemTopics.meshResultFinalPacket, packet)
         else:
-            print("Unknown OpCode", opCode)
+            _LOGGER.warning("Unknown OpCode {}".format(opCode))
 
         
         parsedData = None
