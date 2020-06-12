@@ -1,4 +1,6 @@
 import asyncio
+import time
+
 from crownstone_uart.core.UartEventBus import UartEventBus
 
 class Collector:
@@ -27,6 +29,20 @@ class Collector:
                 return self.response
 
             await asyncio.sleep(self.interval)
+            counter += self.interval
+
+        UartEventBus.unsubscribe(self.cleanupId)
+        return None
+    
+    def receive_sync(self):
+        counter = 0
+        while counter < self.timeout:
+            if self.response is not None:
+                # cleanup the listener(s)
+                UartEventBus.unsubscribe(self.cleanupId)
+                return self.response
+
+            time.sleep(self.interval)
             counter += self.interval
 
         UartEventBus.unsubscribe(self.cleanupId)
