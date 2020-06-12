@@ -1,5 +1,5 @@
 import asyncio
-import os
+import logging
 import threading
 
 import serial
@@ -15,6 +15,8 @@ from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
 from crownstone_uart.core.uart.UartTypes import UartTxType
 from crownstone_uart.core.uart.UartWrapper import UartWrapper
 from crownstone_uart.topics.SystemTopics import SystemTopics
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UartBridge (threading.Thread):
@@ -115,14 +117,17 @@ class UartBridge (threading.Thread):
 
             # print("Cleaning up UartBridge")
         except OSError or serial.SerialException:
-            print("Connection Failed. Retrying...")
+            _LOGGER.info("Connection to USB Failed. Retrying...")
         except KeyboardInterrupt:
             self.running = False
-            print("Closing serial connection.")
+            _LOGGER.debug("Closing serial connection.")
 
+        # close the serial controller
         self.started = False
         self.serialController.close()
         self.serialController = None
+        # remove the event listener pointing to the old connection
+        UartEventBus.unsubscribe(self.eventId)
 
     def write_to_uart(self, data):
         if self.serialController is not None and self.started:

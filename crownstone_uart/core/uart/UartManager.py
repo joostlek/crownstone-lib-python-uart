@@ -1,7 +1,10 @@
 import asyncio
+import logging
 
 from crownstone_uart.core.uart.UartBridge import UartBridge
 from serial.tools import list_ports
+
+_LOGGER = logging.getLogger(__name__)
 
 class UartManager:
 
@@ -53,7 +56,7 @@ class UartManager:
 
         if self.port is None:
             if self._attemptingIndex >= len(self._availablePorts): # this also catches len(self._availablePorts) == 0
-                print("No Crownstone USB connected? Retrying...")
+                _LOGGER.debug("No Crownstone USB connected? Retrying...")
                 await asyncio.sleep(1)
                 await self.reset()
             else:
@@ -75,13 +78,12 @@ class UartManager:
             success = await self._uartBridge.handshake()
 
         if not success:
-            print("Crownstone handshake failed. Moving on to next device...")
             self._attemptingIndex += 1
             self.ready = False
             await self._uartBridge.stop()
             await self.initialize()
         else:
-            print("Connection established to", port)
+            _LOGGER.info("Connection established to {}".format(port))
             self.port = port
             self.ready = True
             asyncio.ensure_future(self.trackConnection())

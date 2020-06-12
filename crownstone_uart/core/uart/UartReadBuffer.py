@@ -1,4 +1,5 @@
 from crownstone_core.util.Conversion import Conversion
+import logging
 
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartWrapper import START_TOKEN, ESCAPE_TOKEN, BIT_FLIP_MASK
@@ -7,6 +8,8 @@ from crownstone_uart.core.uart.uartPackets.UartPacket import PREFIX_SIZE, OPCODE
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 from crownstone_uart.util.UartUtil import UartUtil
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class UartReadBuffer:
@@ -27,7 +30,7 @@ class UartReadBuffer:
         # if we have a start token and we are not active
         if byte is START_TOKEN:
             if self.active:
-                print("WARN: MULTIPLE START TOKENS")
+                _LOGGER.warning("MULTIPLE START TOKENS")
                 UartEventBus.emit(DevTopics.uartNoise, "multiple start token")
 #                print("buf:", self.buffer)
                 self.reset()
@@ -41,7 +44,7 @@ class UartReadBuffer:
 
         if byte is ESCAPE_TOKEN:
             if self.escapingNextToken:
-                print("WARN: DOUBLE ESCAPE")
+                _LOGGER.warning("DOUBLE ESCAPE")
                 UartEventBus.emit(DevTopics.uartNoise, "double escape token")
                 self.reset()
                 return
@@ -65,7 +68,7 @@ class UartReadBuffer:
                 self.process()
                 return
             elif bufferSize > self.length + WRAPPER_SIZE:
-                print("WARN: OVERFLOW")
+                _LOGGER.warning("OVERFLOW")
                 UartEventBus.emit(DevTopics.uartNoise, "overflow")
                 self.reset()
 
@@ -75,7 +78,7 @@ class UartReadBuffer:
         sourceCrc = Conversion.uint8_array_to_uint16(self.buffer[len(self.buffer) - CRC_SIZE : len(self.buffer)])
 
         if calculatedCrc != sourceCrc:
-            print("WARN: Failed CRC")
+            _LOGGER.warning("Failed CRC")
             UartEventBus.emit(DevTopics.uartNoise, "crc mismatch")
             self.reset()
             return
