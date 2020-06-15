@@ -45,6 +45,14 @@ $ sudo adduser $USER dialout
 ### Raspbian
 Similar to Ubuntu.
 
+### Arch Linux
+To use serial in Arch Linux, add yourself to the `uucp` group.
+
+To add yourself to the group:
+```console
+$ sudo gpasswd -a $USER uucp
+```
+Make sure to logout and login again to register the group change.
 
 # Example
 
