@@ -16,11 +16,15 @@ class UartThreadExample(threading.Thread):
     def run(self):
         self.loop = asyncio.new_event_loop()
         self.uart = CrownstoneUart(self.loop)
-        # self.loop.run_until_complete(self.runIt())
-        self.runIt()
+        # choose either sync, or async operation
+        self.loop.run_until_complete(self.runIt())
+        # self.runIt_sync()
 
 
-    def runIt(self):
+    async def runIt(self):
+        await self.uart.initialize_usb()
+
+    def runIt_sync(self):
         self.uart.initialize_usb_sync()
 
     def stop(self):

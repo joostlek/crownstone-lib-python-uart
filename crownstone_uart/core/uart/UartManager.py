@@ -46,7 +46,9 @@ class UartManager(threading.Thread):
 
     def stop(self):
         self.running = False
-        self._uartBridge.stop()
+        UartEventBus.unsubscribe(self.eventId)
+        if self._uartBridge is not None:
+            self._uartBridge.stop()
 
     def resetEvent(self, eventData=None):
         if self.ready:
@@ -70,6 +72,9 @@ class UartManager(threading.Thread):
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def initialize(self):
+        if not self.running:
+            return
+
         self.ready = False
         _LOGGER.debug(F"Initializing... {self.port} {self.baudRate}")
         if self.port is not None:
@@ -112,7 +117,7 @@ class UartManager(threading.Thread):
         self._uartBridge.start()
 
         # wait for the bridge to initialize
-        while not self._uartBridge.started:
+        while not self._uartBridge.started and self.running:
             time.sleep(0.1)
 
         success = True
@@ -138,7 +143,7 @@ class UartManager(threading.Thread):
             _LOGGER.debug("Reinitialization required")
             self._attemptingIndex += 1
             self._uartBridge.stop()
-            while self._uartBridge.started:
+            while self._uartBridge.started and self.running:
                 time.sleep(0.1)
 
             self.initialize()

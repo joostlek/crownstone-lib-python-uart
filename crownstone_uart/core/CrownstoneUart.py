@@ -51,7 +51,7 @@ class CrownstoneUart:
         event = UartEventBus.subscribe(SystemTopics.connectionEstablished, lambda data: handleMessage(result, data))
         self.uartManager.start()
 
-        while not result[0]:
+        while not result[0] and self.running:
             await asyncio.sleep(0.1)
 
         UartEventBus.unsubscribe(event)
@@ -68,9 +68,13 @@ class CrownstoneUart:
         event = UartEventBus.subscribe(SystemTopics.connectionEstablished, lambda data: handleMessage(result, data))
         self.uartManager.start()
 
-        while not result[0]:
-            time.sleep(0.1)
-            
+        try:
+            while not result[0] and self.running:
+                time.sleep(0.1)
+        except KeyboardInterrupt:
+            print("\nClosing Crownstone Uart.... Thanks for your time!")
+            self.stop()
+
         UartEventBus.unsubscribe(event)
 
 
