@@ -1,4 +1,6 @@
 # import signal  # used to catch control C
+import time
+
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
@@ -16,15 +18,20 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 class CrownstoneUart:
 
-    def __init__(self):
+    def __init__(self, loop=None):
         self.uartManager = None
         self.running = True
-        self.loop = asyncio.get_event_loop()
-        self.uartManager = UartManager(self.loop)
+        if loop is None:
+            self.loop = asyncio.get_event_loop()
+        else:
+            self.loop = loop
+
+        self.uartManager  = UartManager()
+        
+
         self.stoneManager = StoneManager()
 
         self.mesh = MeshHandler()
-
         # only for development. Generally undocumented.
         self._usbDev = UsbDevHandler()
 
@@ -35,13 +42,37 @@ class CrownstoneUart:
         return self.uartManager.is_ready()
 
     async def initialize_usb(self, port = None, baudrate=230400):
-        await self.uartManager.initialize(port, baudrate)
+        self.uartManager.config(port, baudrate)
+
+        result = [False]
+        def handleMessage(result, data):
+            result[0] = True
+
+        event = UartEventBus.subscribe(SystemTopics.connectionEstablished, lambda data: handleMessage(result, data))
+        self.uartManager.start()
+
+        while not result[0]:
+            await asyncio.sleep(0.1)
+
+        UartEventBus.unsubscribe(event)
+        
 
     def initialize_usb_sync(self, port = None, baudrate=230400):
-        try:
-            self.loop.run_until_complete(self.uartManager.initialize(port, baudrate))
-        except KeyboardInterrupt:
-            self.stop()
+        self.uartManager.config(port, baudrate)
+
+        result = [False]
+
+        def handleMessage(result, data):
+            result[0] = True
+
+        event = UartEventBus.subscribe(SystemTopics.connectionEstablished, lambda data: handleMessage(result, data))
+        self.uartManager.start()
+
+        while not result[0]:
+            time.sleep(0.1)
+            
+        UartEventBus.unsubscribe(event)
+
 
     def stop(self):
         if self.uartManager is not None:
@@ -61,14 +92,14 @@ class CrownstoneUart:
             self.mesh.turn_crownstone_on(crownstoneId)
 
 
-    def dim_crownstone(self, crownstoneId, value):
+    def dim_crownstone(self, crownstoneId, switchState):
         """
         :param crownstoneId:
         :param switchState: 0 .. 1
         :return:
         """
 
-        self.mesh.set_crownstone_switch_state(crownstoneId, value)
+        self.mesh.set_crownstone_switch_state(crownstoneId, switchState)
 
 
     def get_crownstone_ids(self):

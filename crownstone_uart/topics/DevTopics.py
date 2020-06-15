@@ -33,3 +33,4 @@ class DevTopics:
     adcRestarted = 'adcRestarted'
     uartNoise = 'uartNoise'
     ownMacAddress = 'ownMacAddress'
+    ownCrownstoneId = 'ownCrownstoneId'
