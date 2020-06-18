@@ -41,7 +41,7 @@ class UartBridge(threading.Thread):
 
 
     def start_serial(self):
-        _LOGGER.debug("UartBridge: Initializing serial on port {self.port} with baudrate {self.baudrate}")
+        _LOGGER.debug(F"UartBridge: Initializing serial on port {self.port} with baudrate {self.baudrate}")
         try:
             self.serialController = serial.Serial()
             self.serialController.port = self.port
