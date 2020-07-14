@@ -335,6 +335,8 @@ The library can be designed synchronously (blocking) or asynchronously (asyncio)
 
 ### Async methods have to be awaited.
 
+
+
 #### await initialize_usb(self, port = None, baudrate=230400):
 > Set up the communication with the Crownstone USB.
 

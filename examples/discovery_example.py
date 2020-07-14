@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 """An example that prints all Crownstone IDs seen on the mesh."""
-
+import logging
 import time
-
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 # Create new instance of Bluenet
 from crownstone_uart import CrownstoneUart
 

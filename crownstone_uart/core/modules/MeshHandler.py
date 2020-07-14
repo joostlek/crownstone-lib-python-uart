@@ -70,8 +70,9 @@ class MeshHandler:
     async def set_time(self, timestamp = None):
         if timestamp is None:
             timestamp = math.ceil(time.time())
+
         time_packet = ControlPacketsGenerator.getSetTimePacket(timestamp)
-        await self._command_via_mesh_broadcast(time_packet.getPacket())
+        await self._command_via_mesh_broadcast(time_packet)
 
 
     async def send_no_op(self):
