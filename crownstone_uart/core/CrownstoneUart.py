@@ -122,5 +122,5 @@ class CrownstoneUart:
         uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
 
         # send over uart
-        result = UartWriter(uartPacket).send_sync()
+        result = UartWriter(uartPacket).write_sync()
         # UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
