@@ -5,7 +5,7 @@ import threading
 import serial
 import serial.tools.list_ports
 
-from crownstone_uart import UART_READ_TIMEOUT, UART_WRITE_TIMEOUT
+from crownstone_uart.Constants import UART_READ_TIMEOUT, UART_WRITE_TIMEOUT
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartParser import UartParser
 from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer

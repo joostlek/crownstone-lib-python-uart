@@ -3,6 +3,8 @@ import time
 
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
+
+from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
 
 from crownstone_uart.core.dataFlowManagers.StoneManager import StoneManager
@@ -120,4 +122,5 @@ class CrownstoneUart:
         uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
 
         # send over uart
-        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
+        result = UartWriter(uartPacket).send_sync()
+        # UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
