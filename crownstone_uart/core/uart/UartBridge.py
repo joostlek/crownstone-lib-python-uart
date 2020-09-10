@@ -1,9 +1,11 @@
 import logging
+import sys
 import threading
 
 import serial
 import serial.tools.list_ports
 
+from crownstone_uart import UART_READ_TIMEOUT, UART_WRITE_TIMEOUT
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartParser import UartParser
 from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
@@ -46,7 +48,8 @@ class UartBridge(threading.Thread):
             self.serialController = serial.Serial()
             self.serialController.port = self.port
             self.serialController.baudrate = int(self.baudrate)
-            self.serialController.timeout = 0.25
+            self.serialController.timeout = UART_READ_TIMEOUT
+            self.serialController._write_timeout = UART_WRITE_TIMEOUT
             self.serialController.open()
         except OSError or serial.SerialException or KeyboardInterrupt:
             self.stop()
@@ -83,6 +86,17 @@ class UartBridge(threading.Thread):
 
     def write_to_uart(self, data):
         if self.serialController is not None and self.started:
-            self.serialController.write(data)
+            try:
+                self.serialController.write(data)
+                UartEventBus.emit(SystemTopics.uartWriteSuccess, data)
+            except serial.writeTimeoutError as e:
+                UartEventBus.emit(SystemTopics.uartWriteError, {"message":"Timeout on uart write.", "error": e})
+            except serial.SerialException as e:
+                UartEventBus.emit(SystemTopics.uartWriteError, {"message":"SerialException occurred during uart write", "error": e})
+            except OSError as e:
+                UartEventBus.emit(SystemTopics.uartWriteError, {"message":"OSError occurred during uart write.", "error": e})
+            except:
+                e = sys.exc_info()[0]
+                UartEventBus.emit(SystemTopics.uartWriteError, {"message":"Unknown error during uart write.", "error": e})
         else:
             self.stop()
