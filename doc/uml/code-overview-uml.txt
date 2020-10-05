@@ -1,0 +1,115 @@
+@startuml
+
+class CrownstoneUart {
+  Main API.
+}
+
+class UartManager {
+	Finds and connects to UART device.
+	.. Listens for: ..
+	+ connectionClosed
+}
+
+class UartBridge {
+	The serial driver.
+	.. Listens for: ..
+	+ uartWriteData
+	.. Emits: ..
+	~ uartWriteSuccess
+	~ uartWriteError
+}
+
+class UartReadBuffer {
+	Parses each read byte,
+	checks for start byte,
+	handles escaping bytes.
+	.. Emits: ..
+	~ uartNewPackage
+}
+
+class UartParser {
+	Parses packets and
+	emits different events for different packets.
+	.. Listens for: ..
+	+ uartNewPackage
+}
+
+class StoneManager {
+	Keeps up a list of stoneIds.
+	.. Listens for: ..
+	+ newCrownstoneFound
+}
+
+class StoneStateManager {
+	Keeps up a list of stones, with their state data.
+	.. Listens for: ..
+	+ stateUpdate
+	.. Emits: ..
+	~ newCrownstoneFound
+	~ newDataAvailable
+}
+
+class MeshHandler {
+	API to send commands into the mesh.
+	.. Listens for: ..
+	+ resultPacket
+	+ meshResultPacket
+	+ meshResultFinalPacket
+	.. Emits: ..
+	~ uartWriteData
+}
+
+class UsbDevHandler {
+	API to send dev commands.
+	.. Emits: ..
+	~ uartWriteData
+}
+
+class Collector {
+	Listens for a given topic,
+	waits for 1 event and
+	stores the event data,
+	then stops listening.
+	==
+	Returns the event data,
+	or None when it times out.
+}
+
+class BatchCollector {
+	Listens for a given topic,
+	waits for 1 event and
+	stores the event data.
+	==
+	By repeatidly calling receive() and clear()
+	you get data of multiple events.
+}
+
+class UartWriter {
+	Writes a command, and
+	waits for the result packet reply.
+	.. Listens for: ..
+	+ resultPacket
+	+ uartWriteSuccess
+	+ uartWriteError
+	.. Emits: ..
+	~ uartWriteData
+}
+
+class UartWrapper {
+	Adds start token, header,
+	and CRC to payload.
+	Escapes bytes.
+}
+
+
+CrownstoneUart -- UartManager
+UartManager -- UartBridge
+UartBridge -- UartReadBuffer
+UartBridge -- UartParser
+CrownstoneUart -- StoneManager
+StoneManager -- StoneStateManager
+CrownstoneUart -- MeshHandler
+CrownstoneUart -- UsbDevHandler
+
+
+@enduml
