@@ -1,54 +1,79 @@
 from enum import IntEnum
 
+class UartMessageType(IntEnum):
+	UART_MESSAGE =                     0
+	ENCRYPTED_UART_MESSAGE =           128
+
 class UartTxType(IntEnum):
-	CONTROL =                          1
+	HELLO =                            0
+	SESSION_NONCE =                    1
+	HEARTBEAT =                        2
+	STATUS =                           3
+	CONTROL =                          10
 
-	ENABLE_ADVERTISEMENT =             10000
-	ENABLE_MESH =                      10001
-	
-	GET_CROWNSTONE_ID =                10002
-	GET_MAC_ADDRESS =                  10003
+	ENABLE_ADVERTISEMENT =             50000
+	ENABLE_MESH =                      50001
+	GET_CROWNSTONE_ID =                50002
+	GET_MAC_ADDRESS =                  50003
 
-	ADC_CONFIG_INC_RANGE_CURRENT =     10103
-	ADC_CONFIG_DEC_RANGE_CURRENT =     10104
-	ADC_CONFIG_INC_RANGE_VOLTAGE =     10105
-	ADC_CONFIG_DEC_RANGE_VOLTAGE =     10106
-	ADC_CONFIG_DIFFERENTIAL_CURRENT =  10108
-	ADC_CONFIG_DIFFERENTIAL_VOLTAGE =  10109
-	ADC_CONFIG_VOLTAGE_PIN =           10110
+	ADC_CONFIG_INC_RANGE_CURRENT =     50103
+	ADC_CONFIG_DEC_RANGE_CURRENT =     50104
+	ADC_CONFIG_INC_RANGE_VOLTAGE =     50105
+	ADC_CONFIG_DEC_RANGE_VOLTAGE =     50106
+	ADC_CONFIG_DIFFERENTIAL_CURRENT =  50108
+	ADC_CONFIG_DIFFERENTIAL_VOLTAGE =  50109
+	ADC_CONFIG_VOLTAGE_PIN =           50110
 
-	POWER_LOG_CURRENT =                10200
-	POWER_LOG_VOLTAGE =                10201
-	POWER_LOG_FILTERED_CURRENT =       10202
-	POWER_LOG_FILTERED_VOLTAGE =       10203
-	POWER_LOG_CALCULATED_POWER =       10204
-	MOCK_INTERNAL_EVT =                10300 # Send events over crownstone-internal bus, this protocol may change
+	POWER_LOG_CURRENT =                50200
+	POWER_LOG_VOLTAGE =                50201
+	POWER_LOG_FILTERED_CURRENT =       50202
+	POWER_LOG_CALCULATED_POWER =       50204
+
+	MOCK_INTERNAL_EVT =                60000
+	UNKNOWN =                          65535
 
 class UartRxType(IntEnum):
-	ACK =                              0
-	RESULT_PACKET =                    1
-	OWN_SERVICE_DATA =                 2
-	UART_MESSAGE =                     3
-	MESH_SERVICE_DATA =                102
-	EXTERNAL_STATE_PART_0 =			   103
-	EXTERNAL_STATE_PART_1 =			   104
-	MESH_RESULT = 					   105
-	MESH_ACK_ALL_RESULT = 		       106
+	HELLO =                            0
+	SESSION_NONCE =                    1
+	HEARTBEAT =                        2
+	STATUS =                           3
+	RESULT_PACKET =                    10
 
-	ADVERTISING_ENABLED =              10000
-	MESH_ENABLED =                     10001
-	CROWNSTONE_ID =                    10002
-	MAC_ADDRESS =                      10003
+	UART_MESSAGE =                     10000
+	SESSION_NONCE_MISSING =            10001
+	OWN_SERVICE_DATA =                 10002
+	PRESENCE_CHANGE =                  10004
+	FACTORY_RESET =                    10005
 
-	ADC_CONFIG =                       10100
-	ADC_RESTART =                      10101
+	MESH_SERVICE_DATA =                10102
+	EXTERNAL_STATE_PART_0 =			   10103
+	EXTERNAL_STATE_PART_1 =			   10104
+	MESH_RESULT = 					   10105
+	MESH_ACK_ALL_RESULT = 		       10106
 
-	POWER_LOG_CURRENT =                10200
-	POWER_LOG_VOLTAGE =                10201
-	POWER_LOG_FILTERED_CURRENT =       10202
-	POWER_LOG_FILTERED_VOLTAGE =       10203
-	POWER_LOG_POWER =                  10204
-	
-	
-	ASCII_LOG =               		   20000
-	FIRMWARESTATE =                    20001
+	INTERNAL_EVENT =                   40000
+
+	MESH_CMD_TIME =                    40103
+	MESH_PROFILE_LOCATION =            40110
+	MESH_SET_BEHAVIOUR_SETTINGS =      40111
+	MESH_TRACKED_DEVICE_REGISTER =     40112
+	MESH_TRACKED_DEVICE_TOKEN =        40113
+	MESH_SYNC_REQUEST =                40114
+	MESH_TRACKED_DEVICE_HEARTBEAT =    40120
+
+	ADVERTISING_ENABLED =              50000
+	MESH_ENABLED =                     50001
+	CROWNSTONE_ID =                    50002
+	MAC_ADDRESS =                      50003
+
+	ADC_CONFIG =                       50100
+	ADC_RESTART =                      50101
+
+	POWER_LOG_CURRENT =                50200
+	POWER_LOG_VOLTAGE =                50201
+	POWER_LOG_FILTERED_CURRENT =       50202
+	POWER_LOG_FILTERED_VOLTAGE =       50203
+	POWER_LOG_POWER =                  50204
+
+	ASCII_LOG =               		   60000
+	FIRMWARESTATE =                    60001

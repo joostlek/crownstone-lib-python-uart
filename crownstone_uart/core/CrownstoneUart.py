@@ -4,6 +4,7 @@ import time
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 
+from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
 
@@ -13,8 +14,9 @@ import asyncio
 
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartManager import UartManager
-from crownstone_uart.core.uart.UartTypes import UartTxType
-from crownstone_uart.core.uart.UartWrapper import UartWrapper
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
 
@@ -28,14 +30,16 @@ class CrownstoneUart:
         else:
             self.loop = loop
 
-        self.uartManager  = UartManager()
-        
+        # Keep up settings and state
+        self.state = CrownstoneUartState(deviceId=0)
 
+        self.uartManager = UartManager(self.state)
+        
         self.stoneManager = StoneManager()
 
-        self.mesh = MeshHandler()
+        self.mesh = MeshHandler(self.state)
         # only for development. Generally undocumented.
-        self._usbDev = UsbDevHandler()
+        self._usbDev = UsbDevHandler(self.state)
 
     def __del__(self):
         self.stop()
@@ -118,9 +122,11 @@ class CrownstoneUart:
         # wrap that in a control packet
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).getPacket()
 
-        # finally wrap it in an Uart packet
-        uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        # wrap that in a uart message
+        uartMessage   = UartMessagePacket(self.state.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+
+        # finally, wrap it in an uart wrapper packet
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         # send over uart
         result = UartWriter(uartPacket).write_sync()
-        # UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)

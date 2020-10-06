@@ -8,19 +8,21 @@ from crownstone_core.protocol.BluenetTypes import ControlType, StateType, Result
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
 from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket, MeshSetStatePacket, MeshBroadcastPacket, MeshBroadcastAckedPacket
 
+from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.containerClasses.MeshResult import MeshResult
 from crownstone_uart.core.dataFlowManagers.BatchCollector import BatchCollector
 from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.uart.UartTypes import UartTxType
-from crownstone_uart.core.uart.UartWrapper import UartWrapper
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
 
 class MeshHandler:
 
-    def __init__(self):
-        pass
+    def __init__(self, libState: CrownstoneUartState):
+        self.libState = libState
 
 
     def turn_crownstone_on(self, crownstone_id: int):
@@ -60,8 +62,11 @@ class MeshHandler:
         # wrap that in a control packet
         controlPacket = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).getPacket()
 
-        # finally wrap it in an Uart packet
-        uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        # wrap that in a uart message
+        uartMessage = UartMessagePacket(self.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+
+        # finally wrap it in a uart wrapper packet
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         # send over uart
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
@@ -188,7 +193,8 @@ class MeshHandler:
         # flag value: 2
         corePacket    = MeshSetStatePacket(crownstone_id, packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartPacket    = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector     = Collector(timeout=2,  topic=SystemTopics.resultPacket)
         individualCollector = BatchCollector(timeout=15, topic=SystemTopics.meshResultPacket)
@@ -218,7 +224,8 @@ class MeshHandler:
         # value: 1
         corePacket = MeshBroadcastPacket(packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartPacket = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector = Collector(timeout=2, topic=SystemTopics.resultPacket)
 
@@ -244,7 +251,8 @@ class MeshHandler:
         # value: 3
         corePacket    = MeshBroadcastAckedPacket(crownstone_uid_array, packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartPacket    = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector     = Collector(timeout=2, topic=SystemTopics.resultPacket)
         individualCollector = BatchCollector(timeout=15, topic=SystemTopics.meshResultPacket)

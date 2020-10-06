@@ -2,9 +2,8 @@ from crownstone_core.util.Conversion import Conversion
 import logging
 
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.uart.UartWrapper import START_TOKEN, ESCAPE_TOKEN, BIT_FLIP_MASK
-from crownstone_uart.core.uart.uartPackets.UartPacket import PREFIX_SIZE, OPCODE_SIZE, WRAPPER_SIZE, CRC_SIZE, \
-    UartPacket
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import SIZE_HEADER_SIZE, CRC_SIZE, WRAPPER_HEADER_SIZE, START_TOKEN, \
+    ESCAPE_TOKEN, BIT_FLIP_MASK, UartWrapperPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 from crownstone_uart.util.UartUtil import UartUtil
@@ -16,81 +15,101 @@ class UartReadBuffer:
 
     def __init__(self):
         self.buffer = []
-        self.escapingNextToken = False
+        self.escapingNextByte = False
         self.active = False
-        self.opCode = 0
-        
-        self.length = 0
+        self.sizeToRead = 0
 
     def addByteArray(self, rawByteArray):
         for byte in rawByteArray:
             self.add(byte)
 
     def add(self, byte):
-        # if we have a start token and we are not active
+        # An escape shouldn't be followed by a special byte.
+        if self.escapingNextByte and (byte is START_TOKEN or byte is ESCAPE_TOKEN):
+            _LOGGER.warning("Special byte after escape token")
+            UartEventBus.emit(DevTopics.uartNoise, "special byte after escape token")
+            self.reset()
+            return
+
+        # Activate on start token.
         if byte is START_TOKEN:
             if self.active:
                 _LOGGER.warning("MULTIPLE START TOKENS")
                 UartEventBus.emit(DevTopics.uartNoise, "multiple start token")
-#                print("buf:", self.buffer)
-                self.reset()
-                return
-            else:
-                self.active = True
-                return
+            self.reset()
+            self.active = True
+            return
 
         if not self.active:
             return
 
+        # Escape next byte on escape token.
         if byte is ESCAPE_TOKEN:
-            if self.escapingNextToken:
-                _LOGGER.warning("DOUBLE ESCAPE")
-                UartEventBus.emit(DevTopics.uartNoise, "double escape token")
-                self.reset()
-                return
-
-            self.escapingNextToken = True
+            self.escapingNextByte = True
             return
 
-        # first get the escaping out of the way to avoid any double checks later on
-        if self.escapingNextToken:
+        if self.escapingNextByte:
             byte ^= BIT_FLIP_MASK
-            self.escapingNextToken = False
+            self.escapingNextByte = False
 
         self.buffer.append(byte)
         bufferSize = len(self.buffer)
 
-        if bufferSize == PREFIX_SIZE:
-            self.length = Conversion.uint8_array_to_uint16(self.buffer[OPCODE_SIZE:PREFIX_SIZE])
+        if self.sizeToRead == 0:
+            # We didn't parse the size yet.
+            if bufferSize == SIZE_HEADER_SIZE:
+                # Now we know the remaining size to read
+                self.sizeToRead = Conversion.uint8_array_to_uint16(self.buffer)
 
-        if bufferSize > PREFIX_SIZE:
-            if bufferSize == (self.length + WRAPPER_SIZE):
-                self.process()
+                # Size to read shouldn't be 0.
+                if self.sizeToRead == 0:
+                    self.reset()
+                    return
+
+                self.buffer = []
                 return
-            elif bufferSize > self.length + WRAPPER_SIZE:
-                _LOGGER.warning("OVERFLOW")
-                UartEventBus.emit(DevTopics.uartNoise, "overflow")
-                self.reset()
+
+        elif bufferSize >= self.sizeToRead:
+            self.process()
+            self.reset()
+            return
 
     def process(self):
-        payload = self.buffer[0:len(self.buffer)-CRC_SIZE]
-        calculatedCrc = UartUtil.crc16_ccitt(payload)
-        sourceCrc = Conversion.uint8_array_to_uint16(self.buffer[len(self.buffer) - CRC_SIZE : len(self.buffer)])
+        """
+        Process a buffer.
+
+        Check CRC, and emit a uart packet.
+
+        Buffer starts after size header, and includes wrapper header and tail (CRC).
+        """
+
+        # Check size
+        bufferSize = len(self.buffer)
+        wrapperSize = WRAPPER_HEADER_SIZE + CRC_SIZE
+        if bufferSize < wrapperSize:
+            _LOGGER.warning("Buffer too small")
+            UartEventBus.emit(DevTopics.uartNoise, "buffer too small")
+            return
+
+        # Get the buffer between size field and CRC:
+        baseBuffer = self.buffer[0 : bufferSize - CRC_SIZE]
+
+        # Check CRC
+        calculatedCrc = UartUtil.crc16_ccitt(baseBuffer)
+        sourceCrc = Conversion.uint8_array_to_uint16(self.buffer[bufferSize - CRC_SIZE : ])
 
         if calculatedCrc != sourceCrc:
             _LOGGER.warning("Failed CRC")
             UartEventBus.emit(DevTopics.uartNoise, "crc mismatch")
-            self.reset()
             return
 
-        packet = UartPacket(self.buffer)
-        UartEventBus.emit(SystemTopics.uartNewPackage, packet)
-        self.reset()
+        wrapperPacket = UartWrapperPacket()
+        if wrapperPacket.parse(baseBuffer):
+            UartEventBus.emit(SystemTopics.uartNewPackage, wrapperPacket)
 
     def reset(self):
         self.buffer = []
-        self.escapingNextToken = False
+        self.escapingNextByte = False
         self.active = False
-        self.opCode = 0
-        self.length = 0
+        self.sizeToRead = 0
 

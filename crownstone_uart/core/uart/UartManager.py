@@ -5,21 +5,27 @@ import time
 
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
-from crownstone_uart.core.dataFlowManagers.Collector import Collector
 
-from crownstone_uart.topics.SystemTopics import SystemTopics
+from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
+from crownstone_uart.core.dataFlowManagers.Collector import Collector
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.uart.UartWrapper import UartWrapper
-from crownstone_uart.core.uart.UartTypes import UartTxType
-from crownstone_uart.topics.UartTopics import UartTopics
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.UartBridge import UartBridge
+
+from crownstone_uart.topics.UartTopics import UartTopics
+from crownstone_uart.topics.SystemTopics import SystemTopics
+
 from serial.tools import list_ports
 
 _LOGGER = logging.getLogger(__name__)
 
 class UartManager(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, libState: CrownstoneUartState):
+        self.libState = libState
         self.port = None
         self.baudRate = 230400
         self.running = True
@@ -69,7 +75,8 @@ class UartManager(threading.Thread):
 
     def echo(self, string):
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(string).getPacket()
-        uartPacket    = UartWrapper(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage   = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def initialize(self):

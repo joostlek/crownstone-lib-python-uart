@@ -1,16 +1,18 @@
 from crownstone_core.protocol.BlePackets import ControlStateSetPacket, ControlPacket
 from crownstone_core.protocol.BluenetTypes import StateType, ControlType
 
+from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.uart.UartTypes import UartTxType
-from crownstone_uart.core.uart.UartWrapper import UartWrapper
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
 
 class UsbDevHandler:
     
-    def __init__(self):
-        pass
+    def __init__(self, libState: CrownstoneUartState):
+        self.libState = libState
     
     def setAdvertising(self, enabled):
         """
@@ -18,7 +20,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.ENABLE_ADVERTISEMENT, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.ENABLE_ADVERTISEMENT, self._getPayload(enabled))
     
     def setMeshing(self, enabled):
         """
@@ -26,49 +28,49 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.ENABLE_MESH, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.ENABLE_MESH, self._getPayload(enabled))
     
     def requestCrownstoneId(self):
         """
             Request the Crownstone ID. This is a uint16
             :return:
         """
-        self._send(UartWrapper(UartTxType.GET_CROWNSTONE_ID, []).getPacket())
+        self._send(UartTxType.GET_CROWNSTONE_ID, [])
     
     def requestMacAddress(self):
         """
             Request the MAC address ID.
             :return:
         """
-        self._send(UartWrapper(UartTxType.GET_MAC_ADDRESS, []).getPacket())
+        self._send(UartTxType.GET_MAC_ADDRESS, [])
     
     def increaseCurrentRange(self):
         """
             Increase the GAIN on the current sensing
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_INC_RANGE_CURRENT, []).getPacket())
+        self._send(UartTxType.ADC_CONFIG_INC_RANGE_CURRENT, [])
     
     def decreaseCurrentRange(self):
         """
             Decrease the GAIN on the current sensing
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_DEC_RANGE_CURRENT, []).getPacket())
+        self._send(UartTxType.ADC_CONFIG_DEC_RANGE_CURRENT, [])
     
     def increaseVoltageRange(self):
         """
             Increase the GAIN on the voltage sensing
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_INC_RANGE_VOLTAGE, []).getPacket())
+        self._send(UartTxType.ADC_CONFIG_INC_RANGE_VOLTAGE, [])
     
     def decreaseVoltageRange(self):
         """
             Decrease the GAIN on the voltage sensing
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_DEC_RANGE_VOLTAGE, []).getPacket())
+        self._send(UartTxType.ADC_CONFIG_DEC_RANGE_VOLTAGE, [])
     
     def setDifferentialModeCurrent(self, enabled):
         """
@@ -76,7 +78,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_DIFFERENTIAL_CURRENT, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.ADC_CONFIG_DIFFERENTIAL_CURRENT, self._getPayload(enabled))
     
     def setDifferentialModeVoltage(self, enabled):
         """
@@ -84,7 +86,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_DIFFERENTIAL_VOLTAGE, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.ADC_CONFIG_DIFFERENTIAL_VOLTAGE, self._getPayload(enabled))
 
     def setVoltageChannelPin(self, pin):
         """
@@ -92,14 +94,14 @@ class UsbDevHandler:
             :param pin: int [0 .. 255]
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_VOLTAGE_PIN, [pin]).getPacket())
+        self._send(UartTxType.ADC_CONFIG_VOLTAGE_PIN, [pin])
 
     def toggleVoltageChannelPin(self):
         """
             Select the measurement pin for the voltage sensing
             :return:
         """
-        self._send(UartWrapper(UartTxType.ADC_CONFIG_VOLTAGE_PIN, []).getPacket())
+        self._send(UartTxType.ADC_CONFIG_VOLTAGE_PIN, [])
 
     def setSendCurrentSamples(self, enabled):
         """
@@ -107,7 +109,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.POWER_LOG_CURRENT, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.POWER_LOG_CURRENT, self._getPayload(enabled))
 
     def setSendVoltageSamples(self, enabled):
         """
@@ -115,7 +117,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.POWER_LOG_VOLTAGE, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.POWER_LOG_VOLTAGE, self._getPayload(enabled))
     
     def setSendFilteredCurrentSamples(self, enabled):
         """
@@ -123,7 +125,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.POWER_LOG_FILTERED_CURRENT, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.POWER_LOG_FILTERED_CURRENT, self._getPayload(enabled))
      
     def setSendFilteredVoltageSamples(self, enabled):
         """
@@ -131,7 +133,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.POWER_LOG_FILTERED_VOLTAGE, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.POWER_LOG_FILTERED_VOLTAGE, self._getPayload(enabled))
     
     def setSendCalculatedSamples(self, enabled):
         """
@@ -139,7 +141,7 @@ class UsbDevHandler:
             :param enabled: Boolean
             :return:
         """
-        self._send(UartWrapper(UartTxType.POWER_LOG_CALCULATED_POWER, self._getPayload(enabled)).getPacket())
+        self._send(UartTxType.POWER_LOG_CALCULATED_POWER, self._getPayload(enabled))
 
     def setUartMode(self, mode):
         """
@@ -150,7 +152,7 @@ class UsbDevHandler:
         if ((mode < 0) or (mode > 3)):
             return
         controlPacket = ControlStateSetPacket(StateType.UART_ENABLED).loadUInt8(mode).getPacket()
-        self._send(UartWrapper(UartTxType.CONTROL, controlPacket).getPacket())
+        self._send(UartTxType.CONTROL, controlPacket)
 
     def resetCrownstone(self):
         """
@@ -158,28 +160,28 @@ class UsbDevHandler:
             :return:
         """
         resetPacket = ControlPacket(ControlType.RESET).getPacket()
-        self._send(UartWrapper(UartTxType.CONTROL, resetPacket).getPacket())
+        self._send(UartTxType.CONTROL, resetPacket)
 
     def toggleRelay(self, isOn):
         val = 0
         if isOn:
             val = 1
         switchPacket = ControlPacket(ControlType.RELAY).loadUInt8(val).getPacket()
-        self._send(UartWrapper(UartTxType.CONTROL, switchPacket).getPacket())
+        self._send(UartTxType.CONTROL, switchPacket)
 
     def toggleIGBTs(self, isOn):
         val = 0
         if isOn:
             val = 100
         switchPacket = ControlPacket(ControlType.PWM).loadUInt8(val).getPacket()
-        self._send(UartWrapper(UartTxType.CONTROL, switchPacket).getPacket())
+        self._send(UartTxType.CONTROL, switchPacket)
 
     def toggleAllowDimming(self, isOn):
         val = 0
         if isOn:
             val = 1
         instructionPacket = ControlPacket(ControlType.ALLOW_DIMMING).loadUInt8(val).getPacket()
-        self._send(UartWrapper(UartTxType.CONTROL, instructionPacket).getPacket())
+        self._send(UartTxType.CONTROL, instructionPacket)
 
     # MARK: internal methods
     
@@ -190,7 +192,9 @@ class UsbDevHandler:
             
         return [payload]
 
-    def _send(self, uartPacket):
+    def _send(self, opCode: UartTxType, payload: list):
         # send over uart
+        uartMessage = UartMessagePacket(self.libState.deviceId, opCode, payload).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
         
