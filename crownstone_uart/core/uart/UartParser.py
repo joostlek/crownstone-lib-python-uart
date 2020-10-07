@@ -24,10 +24,12 @@ _LOGGER = logging.getLogger(__name__)
 class UartParser:
     
     def __init__(self):
-        self.uartSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
+        self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
+        self.uartMessageSubscription = UartEventBus.subscribe(SystemTopics.uartNewMessage, self.handleUartMessage)
 
     def stop(self):
-        UartEventBus.unsubscribe(self.uartSubscription)
+        UartEventBus.unsubscribe(self.uartPackageSubscription)
+        UartEventBus.unsubscribe(self.uartMessageSubscription)
 
     def parse(self, wrapperPacket: UartWrapperPacket):
         if type(wrapperPacket) is not UartWrapperPacket:
@@ -41,7 +43,7 @@ class UartParser:
         if msgType == UartMessageType.UART_MESSAGE:
             uartMsg = UartMessagePacket()
             if uartMsg.parse(wrapperPacket.payload):
-                self.handleUartMessage(uartMsg)
+                UartEventBus.emit(SystemTopics.uartNewMessage, uartMsg)
         else:
             _LOGGER.warning(F"Unknown message type: {msgType}")
             return
