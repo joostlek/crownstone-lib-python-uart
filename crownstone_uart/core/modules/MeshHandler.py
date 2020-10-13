@@ -63,7 +63,7 @@ class MeshHandler:
         controlPacket = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).getPacket()
 
         # wrap that in a uart message
-        uartMessage = UartMessagePacket(self.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
 
         # finally wrap it in a uart wrapper packet
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
