@@ -8,7 +8,7 @@ from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 # This is the id of the Crownstone we will be switching
 # change it to match the Crownstone Id you want to switch!
-targetCrownstoneId = 37
+targetCrownstoneId = 3
 
 def showNewData(data):
 	global targetCrownstoneId
