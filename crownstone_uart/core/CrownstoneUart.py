@@ -109,7 +109,7 @@ class CrownstoneUart:
         :return:
         """
 
-        self.mesh.set_crownstone_switch_state(crownstoneId, switchVal)
+        self.mesh.set_crownstone_switch(crownstoneId, switchVal)
 
 
     def get_crownstone_ids(self):

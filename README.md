@@ -118,13 +118,13 @@ from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 targetCrownstoneId = 3
 
 def showNewData(data):
-    global targetCrownstoneId
-    if data["id"] == targetCrownstoneId:
-        print("New data received!")
-        print("PowerUsage of crownstone", data["id"], data["powerUsageReal"])
-        print("-------------------")
+	global targetCrownstoneId
+	if data["id"] == targetCrownstoneId:
+		print("New data received!")
+		print("PowerUsage of crownstone", data["id"], data["powerUsageReal"])
+		print("-------------------")
 
-# initialize the library
+
 uart = CrownstoneUart()
 
 # Start up the USB bridge.
@@ -135,24 +135,26 @@ uart.initialize_usb_sync()
 # Set up event listeners
 UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
 
-# Switch this Crownstone on and off. This will be the initial state
-switchState = True
+# Switch this Crownstone on and off.
+turnOn = True
 
-# the try except part is just to catch a control+c, time.sleep does not appreciate being killed.
-for i in range(0,100):
-    if not uart.running:
-        break
+# The try except part is just to catch a control+c, time.sleep does not appreciate being killed.
+try:
+	for i in range(0, 10):
+		if not uart.running:
+			break
 
-    if switchState:
-        print("Switching Crownstone on  (iteration: ", i,")")
-    else:
-        print("Switching Crownstone off (iteration: ", i,")")
-    uart.switch_crownstone(targetCrownstoneId, on = switchState)
+		if turnOn:
+			print("Switching Crownstone on  (iteration: ", i,")")
+		else:
+			print("Switching Crownstone off (iteration: ", i,")")
+		uart.switch_crownstone(targetCrownstoneId, on = turnOn)
 
-    switchState = not switchState
-    time.sleep(2)
+		turnOn = not turnOn
+		time.sleep(2)
+except KeyboardInterrupt:
+	print("\nClosing example.... Thanks for your time!")
 
-# close the connection with the Crownstone USB and cleanup.
 uart.stop()
 
 ```
@@ -191,15 +193,15 @@ uart.switch_crownstone(target_crownstone_id, on = False)
 
 The Crownstone IDs range from 1 to 255. There is a limit of 255 Crownstones per Sphere. More on Spheres and Crownstone IDs can be found here (TODO).
 
-To dim a Crownstone, you first need to tell it that is it allowed to dim. Currently this is done through the Crownstone app. 
+To dim a Crownstone, you first need to tell it that is it allowed to dim. Currently this is done through the Crownstone app.
 When it is set to allow dimming, it can dim and switch up to 100 W devices.
 
 You can dim your Crownstones with the dimCrownstone method:
 
 ```python
 
-# any value between 0 and 1 can be used. 0 is off, 1 is on
-uart.dim_crownstone(target_crownstone_id, 0.5)
+# any value between 0 and 100 can be used. 0 is off, 100 is on
+uart.dim_crownstone(target_crownstone_id, 50)
 
 ```
 
@@ -308,13 +310,12 @@ The library can be designed synchronously (blocking) or asynchronously (asyncio)
 > Switch a Crownstone on and off
 > This method is fire and forget, it will be sent over the mesh and is not acknowledged.
 
-#### `dim_crownstone(crownstone_id: int, value: float [0 .. 1])`
+#### `dim_crownstone(crownstone_id: int, value: int)`
 >> crownstone_id: uid of the targeted Crownstone.
 >>
->> value: 0 is off, 1 is fully on. 
+>> value: 0 is off, 100 is fully on.
 >
-> While dimming, the Crownstone is rated a maximum power usage of 100 W.
-> Dim the Crownstone. 0 is off, 1 is fully on. While dimming, the Crownstone is rated a maximum power usage of 100 W.
+> Dim the Crownstone. 0 is off, 100 is fully on. While dimming, the Crownstone is rated a maximum power usage of 100 W.
 > This method is fire and forget, it will be sent over the mesh and is not acknowledged.
 
 #### `get_crownstone_ids() -> List[int]`
@@ -367,15 +368,15 @@ await uart.mesh.<method-name>
 #### turn_crownstone_off(crownstone_id: int)
 >> crownstone_id: uid of the targeted Crownstone.
 >
-> This will turn the Crownstone with the specified ID off. 
+> This will turn the Crownstone with the specified ID off.
 > Fire and forget. Is not acked.
 
-#### set_crownstone_switch_state(crownstone_id: int, switch_state: float)
+#### set_crownstone_switch(crownstone_id: int, switch_val: int)
 >> crownstone_id: uid of the targeted Crownstone.
 >>
->> switch_state: 0 is off, 1 is fully on. 
+>> switch_state: 0 is off, 100 is fully on.
 >
-> switch_state is a value between 0 and 1. If the Crownstone can't dim, anything over 0 will turn it on.
+> switch_val is a percentage (0 - 100) or a special value (see SwitchValSpecial). If the Crownstone can't dim, any number between 1 and 100 will turn it on.
 > Fire and forget. Is not acked.
 
 ### Async methods

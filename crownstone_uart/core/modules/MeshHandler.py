@@ -33,7 +33,7 @@ class MeshHandler:
         self._switch_crownstone(crownstone_id, 0)
 
 
-    def set_crownstone_switch_state(self, crownstone_id: int, switch_val: int):
+    def set_crownstone_switch(self, crownstone_id: int, switch_val: int):
         """
         :param crownstone_id:
         :param switch_val: 0% .. 100% or special value (SwitchValSpecial).
