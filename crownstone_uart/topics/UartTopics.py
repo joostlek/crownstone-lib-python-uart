@@ -4,7 +4,7 @@ class UartTopics:
     newDataAvailable = "UART_newDataAvailable"  # data is dictionary {
     #   id:                           int    # crownstone id (0-255)
     #   setupMode:                    bool   # is in setup mode
-    #   switchState:                  int
+    #   switchState:                  int    # raw switch state (uint8)
     #   temperature:                  int    # chip temp in Celcius
     #   powerFactor:                  int    # factor between real and apparent
     #   powerUsageReal:               int    # power usage in watts (W)

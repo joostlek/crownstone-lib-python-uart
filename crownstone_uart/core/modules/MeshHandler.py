@@ -4,7 +4,7 @@ from typing import List
 from crownstone_core import Conversion
 from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.protocol.BlePackets import ControlPacket, ControlStateSetPacket
-from crownstone_core.protocol.BluenetTypes import ControlType, StateType, ResultValue
+from crownstone_core.protocol.BluenetTypes import ControlType, StateType, ResultValue, SwitchValSpecial
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
 from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket, MeshSetStatePacket, MeshBroadcastPacket, MeshBroadcastAckedPacket
 
@@ -26,35 +26,32 @@ class MeshHandler:
 
 
     def turn_crownstone_on(self, crownstone_id: int):
-        self._switch_crownstone(crownstone_id, 255)
+        self._switch_crownstone(crownstone_id, SwitchValSpecial.SMART_ON)
 
 
     def turn_crownstone_off(self, crownstone_id: int):
         self._switch_crownstone(crownstone_id, 0)
 
 
-    def set_crownstone_switch_state(self, crownstone_id: int, switch_state: float):
+    def set_crownstone_switch_state(self, crownstone_id: int, switch_val: int):
         """
         :param crownstone_id:
-        :param switch_state: 0 .. 1
+        :param switch_val: 0% .. 100% or special value (SwitchValSpecial).
         :return:
         """
 
-        # forcibly map the input from [any .. any] to [0 .. 1]
-        correctedValue = min(1.0, max(0.0, switch_state))
-
-        self._switch_crownstone(crownstone_id, correctedValue)
+        self._switch_crownstone(crownstone_id, switch_val)
 
 
-    def _switch_crownstone(self,crownstone_id, switch_state):
+    def _switch_crownstone(self,crownstone_id: int, switch_val: int):
         """
         :param crownstone_id:
-        :param switch_state: 0 .. 1
+        :param switch_val: 0% .. 100% or special value (SwitchValSpecial).
         :return:
         """
 
         # create a stone switch state packet to go into the multi switch
-        stoneSwitchPacket = StoneMultiSwitchPacket(crownstone_id, switch_state)
+        stoneSwitchPacket = StoneMultiSwitchPacket(crownstone_id, switch_val)
 
         # wrap it in a mesh multi switch packet
         meshMultiSwitchPacket = MeshMultiSwitchPacket([stoneSwitchPacket]).getPacket()

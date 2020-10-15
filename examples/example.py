@@ -8,7 +8,7 @@ from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 # This is the id of the Crownstone we will be switching
 # change it to match the Crownstone Id you want to switch!
-targetCrownstoneId = 3
+targetCrownstoneId = 37
 
 def showNewData(data):
 	global targetCrownstoneId
@@ -29,21 +29,21 @@ uart.initialize_usb_sync()
 UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
 
 # Switch this Crownstone on and off.
-switchState = True
+turnOn = True
 
-# the try except part is just to catch a control+c, time.sleep does not appreciate being killed.
+# The try except part is just to catch a control+c, time.sleep does not appreciate being killed.
 try:
-	for i in range(0,100):
+	for i in range(0, 10):
 		if not uart.running:
 			break
 
-		if switchState:
+		if turnOn:
 			print("Switching Crownstone on  (iteration: ", i,")")
 		else:
 			print("Switching Crownstone off (iteration: ", i,")")
-		uart.switch_crownstone(targetCrownstoneId, on = switchState)
+		uart.switch_crownstone(targetCrownstoneId, on = turnOn)
 
-		switchState = not switchState
+		turnOn = not turnOn
 		time.sleep(2)
 except KeyboardInterrupt:
 	print("\nClosing example.... Thanks for your time!")

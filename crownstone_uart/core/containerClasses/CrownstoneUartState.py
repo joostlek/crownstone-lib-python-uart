@@ -1,5 +1,4 @@
-from dataclasses import dataclass
 
-@dataclass
 class CrownstoneUartState:
-    deviceId: int
+    def __init__(self, deviceId: int = 0):
+        self.deviceId: int = deviceId

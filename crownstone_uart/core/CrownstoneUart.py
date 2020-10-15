@@ -90,7 +90,7 @@ class CrownstoneUart:
         self.running = False
 
     #
-    def switch_crownstone(self, crownstoneId, on):
+    def switch_crownstone(self, crownstoneId: int, on: bool):
         """
         :param crownstoneId:
         :param on: Boolean
@@ -102,14 +102,14 @@ class CrownstoneUart:
             self.mesh.turn_crownstone_on(crownstoneId)
 
 
-    def dim_crownstone(self, crownstoneId, switchState):
+    def dim_crownstone(self, crownstoneId: int, switchVal: int):
         """
         :param crownstoneId:
-        :param switchState: 0 .. 1
+        :param switchVal: 0% .. 100% or special values (SwitchValSpecial).
         :return:
         """
 
-        self.mesh.set_crownstone_switch_state(crownstoneId, switchState)
+        self.mesh.set_crownstone_switch_state(crownstoneId, switchVal)
 
 
     def get_crownstone_ids(self):

@@ -18,7 +18,7 @@ class StoneStatePacket:
     def getDict(self):
 
         return self.serviceData.getDictionary()
-    
+
     def getSummary(self):
         errorsDictionary = CrownstoneErrors(self.serviceData.errorsBitmask).getDictionary()
     
@@ -26,7 +26,7 @@ class StoneStatePacket:
 
         returnDict["id"] = self.serviceData.crownstoneId
         returnDict["setupMode"] = False # its always false if it comes over mesh: setup haz no mesh.
-        returnDict["switchState"] = self.serviceData.switchState
+        returnDict["switchState"] = self.serviceData.switchState.raw
         returnDict["temperature"] = self.serviceData.temperature
         returnDict["powerFactor"] = self.serviceData.powerFactor
         returnDict["powerUsageReal"] = self.serviceData.powerUsageReal
