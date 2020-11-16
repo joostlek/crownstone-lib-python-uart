@@ -99,7 +99,7 @@ class UartReadBuffer:
         sourceCrc = Conversion.uint8_array_to_uint16(self.buffer[bufferSize - CRC_SIZE : ])
 
         if calculatedCrc != sourceCrc:
-            _LOGGER.warning("Failed CRC")
+            _LOGGER.warning("Failed CRC: {0} != {1} (data: {2})".format(calculatedCrc, sourceCrc, baseBuffer))
             UartEventBus.emit(DevTopics.uartNoise, "crc mismatch")
             return
 
