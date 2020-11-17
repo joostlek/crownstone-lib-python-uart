@@ -65,7 +65,6 @@ class UartRxType(IntEnum):
 	ADVERTISING_ENABLED =              50000
 	MESH_ENABLED =                     50001
 	CROWNSTONE_ID =                    50002
-	MAC_ADDRESS =                      50003
 
 	ADC_CONFIG =                       50100
 	ADC_RESTART =                      50101
