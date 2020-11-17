@@ -50,6 +50,7 @@ class UartRxType(IntEnum):
 	EXTERNAL_STATE_PART_1 =			   10104
 	MESH_RESULT = 					   10105
 	MESH_ACK_ALL_RESULT = 		       10106
+	RSSI_PING_MESSAGE =                10107
 
 	INTERNAL_EVENT =                   40000
 

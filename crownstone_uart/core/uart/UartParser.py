@@ -22,6 +22,11 @@ from crownstone_uart.topics.UartTopics import UartTopics
 _LOGGER = logging.getLogger(__name__)
 
 class UartParser:
+    """
+    Receives SystemTopics.uartNewPackage messages and emits their corresponding SystemTopics.uartNewMessage events.
+    Several opcodes for uartNewMessage wil subsequently be parsed (looped back) and a more specific event may
+    be emitted.
+    """
     
     def __init__(self):
         self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
@@ -149,6 +154,9 @@ class UartParser:
 
         elif opCode == UartRxType.EXTERNAL_STATE_PART_1:
             # no need to process this, that's in the test suite.
+            pass
+        elif opCode == UartRxType.RSSI_PING_MESSAGE:
+            # no need to process this, interested scripts can subscribe to SystemTopics.uartNewMessage
             pass
 
         elif opCode == UartRxType.MESH_RESULT:
