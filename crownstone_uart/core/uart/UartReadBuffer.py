@@ -35,6 +35,7 @@ class UartReadBuffer:
         if byte is START_TOKEN:
             if self.active:
                 _LOGGER.warning("MULTIPLE START TOKENS")
+                _LOGGER.debug(f"Multiple start tokens: sizeToRead={self.sizeToRead} bufLen={len(self.buffer)} buffer={self.buffer}")
                 UartEventBus.emit(DevTopics.uartNoise, "multiple start token")
             self.reset()
             self.active = True
@@ -100,6 +101,7 @@ class UartReadBuffer:
 
         if calculatedCrc != sourceCrc:
             _LOGGER.warning("Failed CRC")
+            _LOGGER.debug(f"Failed CRC: sourceCrc={sourceCrc} calculatedCrc={calculatedCrc} bufSize={len(self.buffer)} buffer={self.buffer}")
             UartEventBus.emit(DevTopics.uartNoise, "crc mismatch")
             return
 
