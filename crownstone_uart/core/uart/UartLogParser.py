@@ -1,8 +1,7 @@
-import sys
 import logging
-import time
 import re
 import os
+import datetime
 
 from crownstone_core.util.Conversion import Conversion
 from crownstone_core.util.DataStepper import DataStepper
@@ -11,6 +10,8 @@ _LOGGER = logging.getLogger(__name__)
 
 class UartLogParser:
 	sourceFilesDir = "/opt/bluenet-workspace/bluenet/source"
+
+	timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
 	# Key: filename
 	# Data: all lines in file as list.
@@ -73,10 +74,11 @@ class UartLogParser:
 		if match:
 			return match.group(1)
 		else:
-			_LOGGER.warning("Can't find log format in: " + line)
+			_LOGGER.warning(f"Can't find log format in: {fileName[-30:]}:{lineNr} {line.rstrip()}")
 			return None
 
 	def parse(self, buffer):
+		timestamp = datetime.datetime.now()
 		dataStepper = DataStepper(buffer)
 		fileNameHash = dataStepper.getUInt32()
 		lineNr = dataStepper.getUInt16()
@@ -192,7 +194,7 @@ class UartLogParser:
 				argNum += 1
 				i += 1
 
-			logStr = "LOG: %15.3f - %s" % (time.time(), f"{fileName[-30:]}:{lineNr} {formattedString}")
+			logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] {formattedString}"
 			# sys.stdout.write(logStr)
 			print(logStr)
 

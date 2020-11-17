@@ -1,6 +1,6 @@
 import sys
 import logging
-import time
+import datetime
 
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
@@ -33,6 +33,7 @@ class UartParser:
         self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
         self.uartMessageSubscription = UartEventBus.subscribe(SystemTopics.uartNewMessage, self.handleUartMessage)
         self.uartLogParser = UartLogParser()
+        self.timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
     def stop(self):
         UartEventBus.unsubscribe(self.uartPackageSubscription)
@@ -131,6 +132,12 @@ class UartParser:
             pass
 
 
+
+        elif opCode == UartRxType.LOG:
+            _LOGGER.debug("received binary log:", messagePacket.payload)
+            self.uartLogParser.parse(messagePacket.payload)
+
+
         ####################
         # Developer events #
         ####################
@@ -227,11 +234,12 @@ class UartParser:
 
 
         elif opCode == UartRxType.ASCII_LOG:
+            timestamp = datetime.datetime.now()
             stringResult = ""
             for byte in messagePacket.payload:
                 if byte < 128:
                     stringResult += chr(byte)
-            logStr = "ASCII LOG: %15.3f - %s" % (time.time(), stringResult)
+            logStr = f"ASCII LOG: [{timestamp.strftime(self.timestampFormat)}] {stringResult}"
             # sys.stdout.write(logStr)
             print(logStr)
 
@@ -241,11 +249,6 @@ class UartParser:
 
 
 
-
-
-        elif opCode == UartRxType.LOG:
-            _LOGGER.debug("received binary log:", messagePacket.payload)
-            self.uartLogParser.parse(messagePacket.payload)
         else:
             _LOGGER.warning("Unknown OpCode {}".format(opCode))
 
