@@ -241,7 +241,7 @@ class UartParser:
                     stringResult += chr(byte)
             logStr = f"ASCII LOG: [{timestamp.strftime(self.timestampFormat)}] {stringResult}"
             # sys.stdout.write(logStr)
-            print(logStr)
+            print(logStr.rstrip())
 
         elif opCode == UartRxType.FIRMWARESTATE:
             # no need to process this, that's in the test suite.
