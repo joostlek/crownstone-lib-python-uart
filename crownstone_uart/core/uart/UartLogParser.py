@@ -2,6 +2,7 @@ import logging
 import re
 import os
 import datetime
+import sys
 
 from crownstone_core.util.Conversion import Conversion
 from crownstone_core.util.DataStepper import DataStepper
@@ -9,7 +10,8 @@ from crownstone_core.util.DataStepper import DataStepper
 _LOGGER = logging.getLogger(__name__)
 
 class UartLogParser:
-	sourceFilesDir = "/opt/bluenet-workspace/bluenet/source"
+	# sourceFilesDir = "/opt/bluenet-workspace/bluenet/source"
+	sourceFilesDir = "/home/vliedel/dev/bluenet-workspace-cmake/bluenet/source"
 
 	timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -23,6 +25,14 @@ class UartLogParser:
 
 	# A list with the full path of all the source files (and maybe some more).
 	fileNames = []
+
+	class LogFlags:
+		prefix = False
+		newLine = False
+
+		def parse(self, flags):
+			self.prefix =  (flags & (1 << 0)) != 0
+			self.newLine = (flags & (1 << 1)) != 0
 
 	def __init__(self):
 
@@ -61,6 +71,7 @@ class UartLogParser:
 		return hashVal
 
 	logPattern = re.compile(".*?LOG[a-zA-Z]+\(\"([^\"]*)\"")
+	rawLogPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*\"([^\"]*)\"")
 
 	def getLogFmt(self, fileName, lineNr):
 		lines = self.bluenetFiles[fileName]
@@ -73,6 +84,9 @@ class UartLogParser:
 		match = self.logPattern.match(line)
 		if match:
 			return match.group(1)
+		match = self.rawLogPattern.match(line)
+		if match:
+			return match.group(1)
 		else:
 			_LOGGER.warning(f"Can't find log format in: {fileName[-30:]}:{lineNr} {line.rstrip()}")
 			return None
@@ -82,6 +96,7 @@ class UartLogParser:
 		dataStepper = DataStepper(buffer)
 		fileNameHash = dataStepper.getUInt32()
 		lineNr = dataStepper.getUInt16()
+		flags = dataStepper.getUInt8()
 		numArgs = dataStepper.getUInt8()
 		argBufs = []
 		for i in range(0, numArgs):
@@ -92,11 +107,14 @@ class UartLogParser:
 		if fileName is None:
 			return
 
+		logFlags = UartLogParser.LogFlags()
+		logFlags.parse(flags)
+
 		# print(f"{fileName}:{lineNr} {argBufs}")
 		logFmt = self.getLogFmt(fileName, lineNr)
 		_LOGGER.debug(f"Log {fileName}:{lineNr} {logFmt} {argBufs}")
 
-		if logFmt:
+		if logFmt is not None:
 			formattedString = ""
 			i = 0
 			argNum = 0
@@ -194,9 +212,18 @@ class UartLogParser:
 				argNum += 1
 				i += 1
 
-			logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] {formattedString}"
-			# sys.stdout.write(logStr)
-			print(logStr)
+			logStr = formattedString
+			# sys.stdout.write(f" {{ {flags} {logFlags.prefix} {logFlags.newLine} }} ")
+			if logFlags.prefix:
+				logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] {logStr}"
+
+			sys.stdout.write(logStr)
+			if logFlags.newLine:
+				# print(logStr)
+				sys.stdout.write('\n')
+			else:
+				# print(logStr, end='')
+				pass
 
 if __name__ == "__main__":
 	uartLogParser = UartLogParser()
