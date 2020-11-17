@@ -100,6 +100,12 @@ class UartParser:
         elif opCode == UartRxType.FACTORY_RESET:
             pass
 
+        elif opCode == UartRxType.BOOTED:
+            pass
+
+        elif opCode == UartRxType.HUB_DATA:
+            pass
+
 
 
 

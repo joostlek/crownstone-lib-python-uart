@@ -44,6 +44,8 @@ class UartRxType(IntEnum):
 	OWN_SERVICE_DATA =                 10002
 	PRESENCE_CHANGE =                  10004
 	FACTORY_RESET =                    10005
+	BOOTED =                           10006
+	HUB_DATA =                         10007
 
 	MESH_SERVICE_DATA =                10102
 	EXTERNAL_STATE_PART_0 =			   10103
