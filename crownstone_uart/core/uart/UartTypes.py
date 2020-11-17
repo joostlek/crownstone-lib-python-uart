@@ -51,6 +51,8 @@ class UartRxType(IntEnum):
 	MESH_RESULT = 					   10105
 	MESH_ACK_ALL_RESULT = 		       10106
 
+	LOG =                              10200
+
 	INTERNAL_EVENT =                   40000
 
 	MESH_CMD_TIME =                    40103

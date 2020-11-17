@@ -7,6 +7,7 @@ from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.util.Conversion import Conversion
 
 from crownstone_uart.core.UartEventBus import UartEventBus
+from crownstone_uart.core.uart.UartLogParser import UartLogParser
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket, PROTOCOL_MAJOR
@@ -26,6 +27,7 @@ class UartParser:
     def __init__(self):
         self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
         self.uartMessageSubscription = UartEventBus.subscribe(SystemTopics.uartNewMessage, self.handleUartMessage)
+        self.uartLogParser = UartLogParser()
 
     def stop(self):
         UartEventBus.unsubscribe(self.uartPackageSubscription)
@@ -161,6 +163,9 @@ class UartParser:
             packet = ResultPacket(messagePacket.payload)
             UartEventBus.emit(SystemTopics.meshResultFinalPacket, packet)
 
+        elif opCode == UartRxType.LOG:
+            _LOGGER.debug("received binary log:", messagePacket.payload)
+            self.uartLogParser.parse(messagePacket.payload)
         else:
             _LOGGER.warning("Unknown OpCode {}".format(opCode))
 
