@@ -50,6 +50,7 @@ class UartRxType(IntEnum):
 	EXTERNAL_STATE_PART_1 =			   10104
 	MESH_RESULT = 					   10105
 	MESH_ACK_ALL_RESULT = 		       10106
+	RSSI_PING_MESSAGE =                10107
 
 	LOG =                              10200
 
@@ -66,7 +67,6 @@ class UartRxType(IntEnum):
 	ADVERTISING_ENABLED =              50000
 	MESH_ENABLED =                     50001
 	CROWNSTONE_ID =                    50002
-	MAC_ADDRESS =                      50003
 
 	ADC_CONFIG =                       50100
 	ADC_RESTART =                      50101

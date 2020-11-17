@@ -23,6 +23,11 @@ from crownstone_uart.topics.UartTopics import UartTopics
 _LOGGER = logging.getLogger(__name__)
 
 class UartParser:
+    """
+    Receives SystemTopics.uartNewPackage messages and emits their corresponding SystemTopics.uartNewMessage events.
+    Several opcodes for uartNewMessage wil subsequently be parsed (looped back) and a more specific event may
+    be emitted.
+    """
     
     def __init__(self):
         self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
@@ -54,15 +59,48 @@ class UartParser:
         opCode = messagePacket.opCode
         parsedData = None
         # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
-        if opCode == UartRxType.OWN_SERVICE_DATA:
+        if opCode == UartRxType.HELLO:
+            pass
+
+        elif opCode == UartRxType.SESSION_NONCE:
+            pass
+
+        elif opCode == UartRxType.HEARTBEAT:
+            pass
+
+        elif opCode == UartRxType.STATUS:
+            pass
+
+        elif opCode == UartRxType.RESULT_PACKET:
+            packet = ResultPacket(messagePacket.payload)
+            UartEventBus.emit(SystemTopics.resultPacket, packet)
+
+
+
+        elif opCode == UartRxType.UART_MESSAGE:
+            stringResult = ""
+            for byte in messagePacket.payload:
+                stringResult += chr(byte)
+            # logStr = "LOG: %15.3f - %s" % (time.time(), stringResult)
+            UartEventBus.emit(UartTopics.uartMessage, {"string":stringResult, "data": messagePacket.payload})
+
+        elif opCode == UartRxType.SESSION_NONCE_MISSING:
+            pass
+
+        elif opCode == UartRxType.OWN_SERVICE_DATA:
             # service data type + device type + data type + service data (15b)
             serviceData = ServiceData(messagePacket.payload)
             if serviceData.validData:
                 UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
 
-        elif opCode == UartRxType.RESULT_PACKET:
-            packet = ResultPacket(messagePacket.payload)
-            UartEventBus.emit(SystemTopics.resultPacket, packet)
+        elif opCode == UartRxType.PRESENCE_CHANGE:
+            pass
+
+        elif opCode == UartRxType.FACTORY_RESET:
+            pass
+
+
+
 
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
@@ -72,26 +110,94 @@ class UartParser:
             # if serviceData.validData:
             #     UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
 
-        elif opCode == UartRxType.OWN_SERVICE_DATA:
-            # service data type + device type + data type + service data (15b)
-            serviceData = ServiceData(messagePacket.payload)
-            if serviceData.validData:
-                UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
+        elif opCode == UartRxType.EXTERNAL_STATE_PART_0:
+            pass
+
+        elif opCode == UartRxType.EXTERNAL_STATE_PART_1:
+            pass
+
+        elif opCode == UartRxType.MESH_RESULT:
+            if len(messagePacket.payload) > 1:
+                crownstoneId = messagePacket.payload[0]
+                packet = ResultPacket(messagePacket.payload[1:])
+                UartEventBus.emit(SystemTopics.meshResultPacket, [crownstoneId, packet])
+
+        elif opCode == UartRxType.MESH_ACK_ALL_RESULT:
+            packet = ResultPacket(messagePacket.payload)
+            UartEventBus.emit(SystemTopics.meshResultFinalPacket, packet)
+
+        elif opCode == UartRxType.RSSI_PING_MESSAGE:
+            # for now, you can subscribe to SystemTopics.uartNewMessage
+            pass
+
+
+        ####################
+        # Developer events #
+        ####################
+
+        elif opCode == UartRxType.INTERNAL_EVENT:
+            pass
+
+
+
+        elif opCode == UartRxType.MESH_CMD_TIME:
+            pass
+
+        elif opCode == UartRxType.MESH_PROFILE_LOCATION:
+            pass
+
+        elif opCode == UartRxType.MESH_SET_BEHAVIOUR_SETTINGS:
+            pass
+
+        elif opCode == UartRxType.MESH_TRACKED_DEVICE_REGISTER:
+            pass
+
+        elif opCode == UartRxType.MESH_TRACKED_DEVICE_TOKEN:
+            pass
+
+        elif opCode == UartRxType.MESH_SYNC_REQUEST:
+            pass
+
+        elif opCode == UartRxType.MESH_TRACKED_DEVICE_HEARTBEAT:
+            pass
+
+
+        ######################
+        # Debug build events #
+        ######################
+
+        elif opCode == UartRxType.ADVERTISING_ENABLED:
+            pass
+
+        elif opCode == UartRxType.MESH_ENABLED:
+            pass
 
         elif opCode == UartRxType.CROWNSTONE_ID:
             id = Conversion.int8_to_uint8(messagePacket.payload)
             UartEventBus.emit(DevTopics.ownCrownstoneId, id)
 
-        elif opCode == UartRxType.MAC_ADDRESS:
-            if len(messagePacket.payload) == 7:
-                # Bug in old firmware (2.1.4 and lower) sends an extra byte.
-                addr = Conversion.uint8_array_to_address(messagePacket.payload[0:-1])
-            else:
-                addr = Conversion.uint8_array_to_address(messagePacket.payload)
-            if addr is not "":
-                UartEventBus.emit(DevTopics.ownMacAddress, addr)
-            else:
-                print("invalid address:", messagePacket.payload)
+        # elif opCode == UartRxType.MAC_ADDRESS:
+        #     if len(messagePacket.payload) == 7:
+        #         # Bug in old firmware (2.1.4 and lower) sends an extra byte.
+        #         addr = Conversion.uint8_array_to_address(messagePacket.payload[0:-1])
+        #     else:
+        #         addr = Conversion.uint8_array_to_address(messagePacket.payload)
+        #     if addr is not "":
+        #         UartEventBus.emit(DevTopics.ownMacAddress, addr)
+        #     else:
+        #         print("invalid address:", messagePacket.payload)
+
+
+
+        elif opCode == UartRxType.ADC_CONFIG:
+            # type is PowerCalculationsPacket
+            parsedData = AdcConfigPacket(messagePacket.payload)
+            UartEventBus.emit(DevTopics.newAdcConfigPacket, parsedData.getDict())
+
+        elif opCode == UartRxType.ADC_RESTART:
+            UartEventBus.emit(DevTopics.adcRestarted, None)
+
+
 
         elif opCode == UartRxType.POWER_LOG_CURRENT:
             # type is CurrentSamples
@@ -117,51 +223,25 @@ class UartParser:
             # type is PowerCalculationsPacket
             parsedData = PowerCalculationPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newCalculatedPowerData, parsedData.getDict())
-            
-        elif opCode == UartRxType.ADC_CONFIG:
-            # type is PowerCalculationsPacket
-            parsedData = AdcConfigPacket(messagePacket.payload)
-            UartEventBus.emit(DevTopics.newAdcConfigPacket, parsedData.getDict())
 
-        elif opCode == UartRxType.ADC_RESTART:
-            UartEventBus.emit(DevTopics.adcRestarted, None)
+
 
         elif opCode == UartRxType.ASCII_LOG:
             stringResult = ""
             for byte in messagePacket.payload:
                 if byte < 128:
                     stringResult += chr(byte)
-            logStr = "LOG: %15.3f - %s" % (time.time(), stringResult)
-            sys.stdout.write(logStr)
-
-        elif opCode == UartRxType.UART_MESSAGE:
-            stringResult = ""
-            for byte in messagePacket.payload:
-                stringResult += chr(byte)
-            # logStr = "LOG: %15.3f - %s" % (time.time(), stringResult)
-            UartEventBus.emit(UartTopics.uartMessage, {"string":stringResult, "data": messagePacket.payload})
+            logStr = "ASCII LOG: %15.3f - %s" % (time.time(), stringResult)
+            # sys.stdout.write(logStr)
+            print(logStr)
 
         elif opCode == UartRxType.FIRMWARESTATE:
             # no need to process this, that's in the test suite.
             pass
 
-        elif opCode == UartRxType.EXTERNAL_STATE_PART_0:
-            # no need to process this, that's in the test suite.
-            pass
 
-        elif opCode == UartRxType.EXTERNAL_STATE_PART_1:
-            # no need to process this, that's in the test suite.
-            pass
 
-        elif opCode == UartRxType.MESH_RESULT:
-            if len(messagePacket.payload) > 1:
-                crownstoneId = messagePacket.payload[0]
-                packet = ResultPacket(messagePacket.payload[1:])
-                UartEventBus.emit(SystemTopics.meshResultPacket, [crownstoneId, packet])
 
-        elif opCode == UartRxType.MESH_ACK_ALL_RESULT:
-            packet = ResultPacket(messagePacket.payload)
-            UartEventBus.emit(SystemTopics.meshResultFinalPacket, packet)
 
         elif opCode == UartRxType.LOG:
             _LOGGER.debug("received binary log:", messagePacket.payload)
