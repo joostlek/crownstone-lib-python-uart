@@ -30,3 +30,5 @@ class UartTopics:
 
     uartMessage = "UART_Message" # data is dictionary: {"string": str, "data": [uint8, uint8, ...] }
 
+    hello = "UART_hello" # Data is: UartCrownstoneHelloPacket
+

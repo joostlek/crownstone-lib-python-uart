@@ -85,6 +85,7 @@ class UartBridge(threading.Thread):
         UartEventBus.emit(SystemTopics.connectionClosed, True)
 
     def write_to_uart(self, data):
+        _LOGGER.debug(f"write_to_uart: {data}")
         if self.serialController is not None and self.started:
             try:
                 self.serialController.write(data)

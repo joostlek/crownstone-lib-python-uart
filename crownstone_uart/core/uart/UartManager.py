@@ -8,6 +8,8 @@ from crownstone_core.protocol.BluenetTypes import ControlType
 
 from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.dataFlowManagers.Collector import Collector
+from crownstone_uart.core.uart.uartPackets.UartCommandHelloPacket import UartCommandHelloPacket
+from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 
 from crownstone_uart.core.UartEventBus import UartEventBus
@@ -79,6 +81,12 @@ class UartManager(threading.Thread):
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
+    def writeHello(self):
+        helloPacket = UartCommandHelloPacket().getPacket()
+        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.HELLO, helloPacket).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
+
     def initialize(self):
         while self.running and not self.ready:
             self.ready = False
@@ -134,21 +142,16 @@ class UartManager(threading.Thread):
         success = True
 
         if handshake:
-            collector = Collector(timeout=0.25, topic=UartTopics.uartMessage)
-            
-            self.echo("HelloCrownstone")
+            collector = Collector(timeout=0.25, topic=UartTopics.hello)
+            self.writeHello()
             reply = collector.receive_sync()
 
             success = False
-            if reply is not None:
-                if "string" in reply:
-                    success = reply["string"] == "HelloCrownstone"
-                    _LOGGER.debug("Handshake successful")
-                else:
-                    _LOGGER.debug("Handshake failed")
+            if isinstance(reply, UartCrownstoneHelloPacket):
+                success = True
+                _LOGGER.debug("Handshake successful")
             else:
                 _LOGGER.debug("Handshake failed")
-
 
         if not success:
             _LOGGER.debug("Reinitialization required")

@@ -16,6 +16,7 @@ from crownstone_uart.core.uart.uartPackets.CurrentSamplesPacket import CurrentSa
 from crownstone_uart.core.uart.uartPackets.PowerCalculationPacket import PowerCalculationPacket
 from crownstone_uart.core.uart.uartPackets.StoneStatePacket import StoneStatePacket
 from crownstone_uart.core.uart.uartPackets.VoltageSamplesPacket import VoltageSamplesPacket
+from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 from crownstone_uart.topics.UartTopics import UartTopics
@@ -52,6 +53,9 @@ class UartParser:
             uartMsg = UartMessagePacket()
             if uartMsg.parse(wrapperPacket.payload):
                 UartEventBus.emit(SystemTopics.uartNewMessage, uartMsg)
+        elif msgType == UartMessageType.ENCRYPTED_UART_MESSAGE:
+            _LOGGER.info(f"Received encrypted msg: decryption is not implemented.")
+            return
         else:
             _LOGGER.warning(F"Unknown message type: {msgType}")
             return
@@ -61,15 +65,20 @@ class UartParser:
         parsedData = None
         # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
         if opCode == UartRxType.HELLO:
+            helloPacket = UartCrownstoneHelloPacket(messagePacket.payload)
+            UartEventBus.emit(UartTopics.hello, helloPacket)
             pass
 
         elif opCode == UartRxType.SESSION_NONCE:
+            _LOGGER.debug(f"Received SESSION_NONCE")
             pass
 
         elif opCode == UartRxType.HEARTBEAT:
+            _LOGGER.debug(f"Received HEARTBEAT")
             pass
 
         elif opCode == UartRxType.STATUS:
+            _LOGGER.debug(f"Received STATUS")
             pass
 
         elif opCode == UartRxType.RESULT_PACKET:
@@ -77,6 +86,34 @@ class UartParser:
             UartEventBus.emit(SystemTopics.resultPacket, packet)
 
 
+        #################
+        # Error replies #
+        #################
+
+        elif opCode == UartRxType.ERR_REPLY_PARSING_FAILED:
+            _LOGGER.debug(f"Received ERR_REPLY_PARSING_FAILED")
+            pass
+
+        elif opCode == UartRxType.ERR_REPLY_STATUS:
+            _LOGGER.debug(f"Received ERR_REPLY_STATUS")
+            pass
+
+        elif opCode == UartRxType.ERR_REPLY_SESSION_NONCE_MISSING:
+            _LOGGER.debug(f"Received ERR_REPLY_SESSION_NONCE_MISSING")
+            pass
+
+        elif opCode == UartRxType.ERR_REPLY_DECRYPTION_FAILED:
+            _LOGGER.debug(f"Received ERR_REPLY_DECRYPTION_FAILED")
+            pass
+
+        elif 9900 < opCode < 10000:
+            _LOGGER.debug(f"Received ERR_REPLY {opCode}")
+            pass
+
+
+        ################
+        #### Events ####
+        ################
 
         elif opCode == UartRxType.UART_MESSAGE:
             stringResult = ""
@@ -86,6 +123,7 @@ class UartParser:
             UartEventBus.emit(UartTopics.uartMessage, {"string":stringResult, "data": messagePacket.payload})
 
         elif opCode == UartRxType.SESSION_NONCE_MISSING:
+            _LOGGER.debug(f"Received SESSION_NONCE_MISSING")
             pass
 
         elif opCode == UartRxType.OWN_SERVICE_DATA:
@@ -101,6 +139,7 @@ class UartParser:
             pass
 
         elif opCode == UartRxType.BOOTED:
+            _LOGGER.debug(f"Received BOOTED")
             pass
 
         elif opCode == UartRxType.HUB_DATA:
@@ -140,7 +179,7 @@ class UartParser:
 
 
         elif opCode == UartRxType.LOG:
-            _LOGGER.debug("received binary log:", messagePacket.payload)
+            _LOGGER.debug(f"Received binary log: {messagePacket.payload}")
             self.uartLogParser.parse(messagePacket.payload)
 
 
@@ -256,7 +295,7 @@ class UartParser:
 
 
         else:
-            _LOGGER.warning("Unknown OpCode {}".format(opCode))
+            _LOGGER.warning(f"Unknown opCode: {opCode}")
 
         
         parsedData = None

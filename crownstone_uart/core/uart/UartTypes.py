@@ -39,6 +39,11 @@ class UartRxType(IntEnum):
 	STATUS =                           3
 	RESULT_PACKET =                    10
 
+	ERR_REPLY_PARSING_FAILED =         9900
+	ERR_REPLY_STATUS =                 9901
+	ERR_REPLY_SESSION_NONCE_MISSING =  9902
+	ERR_REPLY_DECRYPTION_FAILED =      9903
+
 	UART_MESSAGE =                     10000
 	SESSION_NONCE_MISSING =            10001
 	OWN_SERVICE_DATA =                 10002
