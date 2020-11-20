@@ -90,7 +90,7 @@ class UartWrapperPacket:
 		packet = []
 		packet.append(self.protocolMajor)
 		packet.append(self.protocolMinor)
-		packet.append(self.messageType)
+		packet.append(int(self.messageType))
 		packet += self.payload
 
 		# Calculate the CRC of the packet
