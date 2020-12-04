@@ -96,6 +96,7 @@ class UartLogParser:
 		dataStepper = DataStepper(buffer)
 		fileNameHash = dataStepper.getUInt32()
 		lineNr = dataStepper.getUInt16()
+		logLevel = dataStepper.getUInt8()
 		flags = dataStepper.getUInt8()
 		numArgs = dataStepper.getUInt8()
 		argBufs = []
@@ -224,6 +225,79 @@ class UartLogParser:
 			else:
 				# print(logStr, end='')
 				pass
+
+	def parseArray(self, buffer):
+		timestamp = datetime.datetime.now()
+		dataStepper = DataStepper(buffer)
+		fileNameHash = dataStepper.getUInt32()
+		lineNr = dataStepper.getUInt16()
+		logLevel = dataStepper.getUInt8()
+		flags = dataStepper.getUInt8()
+		elementType = dataStepper.getUInt8()
+		elementSize = dataStepper.getUInt8()
+		dataSize = dataStepper.remaining()
+
+		fileName = self.fileNameHashMap.get(fileNameHash, None)
+		if fileName is None:
+			return
+
+		logFlags = UartLogParser.LogFlags()
+		logFlags.parse(flags)
+
+
+		if dataSize % elementSize != 0:
+			return
+
+		logStr = "["
+		numElements = int(dataSize / elementSize)
+		_LOGGER.debug(f"dataSize={dataSize} elementSize={elementSize} numElements={numElements}")
+		for i in range(0, numElements):
+			if elementType == 0:
+				# Signed integer
+				elemVal = 0
+				if elementSize == 1:
+					elemVal = dataStepper.getInt8()
+				elif elementSize == 2:
+					elemVal = dataStepper.getInt16()
+				elif elementSize == 4:
+					elemVal = dataStepper.getInt32()
+				elif elementSize == 8:
+					elemVal = dataStepper.getInt64()
+				logStr += "%i, " % elemVal
+
+			elif elementType == 1:
+				# Unsigned integer
+				elemVal = 0
+				if elementSize == 1:
+					elemVal = dataStepper.getUInt8()
+				elif elementSize == 2:
+					elemVal = dataStepper.getUInt16()
+				elif elementSize == 4:
+					elemVal = dataStepper.getUInt32()
+				elif elementSize == 8:
+					elemVal = dataStepper.getUInt64()
+				logStr += "%u, " % elemVal
+
+			elif elementType == 2:
+				# Floating point
+				elemVal = 0.0
+				if elementSize == 4:
+					argVal = dataStepper.getFloat()
+				logStr += "%f, " % elemVal
+
+		# Remove last ", " and add closing bracket.
+		logStr = logStr[0:-2] + "]"
+
+		if logFlags.prefix:
+			logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] "
+
+		sys.stdout.write(logStr)
+		if logFlags.newLine:
+			# print(logStr)
+			sys.stdout.write('\n')
+		else:
+			# print(logStr, end='')
+			pass
 
 if __name__ == "__main__":
 	uartLogParser = UartLogParser()

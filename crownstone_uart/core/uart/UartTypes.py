@@ -10,6 +10,7 @@ class UartTxType(IntEnum):
 	HEARTBEAT =                        2
 	STATUS =                           3
 	CONTROL =                          10
+	HUB_DATA_REPLY =                   11
 
 	ENABLE_ADVERTISEMENT =             50000
 	ENABLE_MESH =                      50001
@@ -60,6 +61,7 @@ class UartRxType(IntEnum):
 	RSSI_PING_MESSAGE =                10107
 
 	LOG =                              10200
+	LOG_ARRAY =                        10201
 
 	INTERNAL_EVENT =                   40000
 
