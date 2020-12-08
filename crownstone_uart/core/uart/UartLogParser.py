@@ -10,8 +10,7 @@ from crownstone_core.util.DataStepper import DataStepper
 _LOGGER = logging.getLogger(__name__)
 
 class UartLogParser:
-	# sourceFilesDir = "/opt/bluenet-workspace/bluenet/source"
-	sourceFilesDir = "/home/vliedel/dev/bluenet-workspace-cmake/bluenet/source"
+	sourceFilesDir = "/opt/bluenet-workspace/bluenet/source"
 
 	timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
@@ -35,12 +34,10 @@ class UartLogParser:
 	printPrefix = True
 
 	class LogFlags:
-		prefix = False
 		newLine = False
 
 		def parse(self, flags):
-			self.prefix =  (flags & (1 << 0)) != 0
-			self.newLine = (flags & (1 << 1)) != 0
+			self.newLine = (flags & (1 << 0)) != 0
 
 	def __init__(self):
 
@@ -79,10 +76,10 @@ class UartLogParser:
 		return hashVal
 
 	logPattern = re.compile(".*?LOG[a-zA-Z]+\(\"([^\"]*)\"")
-	rawLogPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*\"([^\"]*)\"")
+	rawLogPattern = re.compile(".*?_log\([^,]+,[^,]+,\s*\"([^\"]*)\"")
 
 	logDefinedStringPattern = re.compile(".*?LOG[a-zA-Z]+\(([A-Z_]+)")
-	rawLogDefinedStringPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*([A-Z_]+)")
+	rawLogDefinedStringPattern = re.compile(".*?_log\([^,]+,[^,]+,\s*([A-Z_]+)")
 
 	def getLogFmt(self, fileName, lineNr):
 		lines = self.bluenetFiles[fileName]
