@@ -71,6 +71,7 @@ class UartLogParser:
 		return hashVal
 
 	logPattern = re.compile(".*?LOG[a-zA-Z]+\(\"([^\"]*)\"")
+	logDefinedStringPattern = re.compile(".*?LOG[a-zA-Z]+\(([A-Z_]+)")
 	rawLogPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*\"([^\"]*)\"")
 
 	def getLogFmt(self, fileName, lineNr):
@@ -80,16 +81,70 @@ class UartLogParser:
 		if lineNr < 0 or lineNr >= len(lines):
 			_LOGGER.warning("Invalid line number " + str(lineNr + 1))
 			return None
+
 		line = lines[lineNr]
-		match = self.logPattern.match(line)
+		result = self.getLogFmtFromLine(line)
+		if result is not None:
+			return result
+
+		# Maybe the log line is spread over multiple lines.
+		brackets = 0
+		for c in line[::-1]:
+			if c == ')':
+				brackets = brackets - 1
+			if c == '(':
+				brackets = brackets + 1
+		if brackets < 0:
+			# There are more closing than opening brackets, so the log format is probably on a line before the given line number.
+			# Iterate back over lines, and merge the lines together.
+			# Loop until the brackets are balanced (as many opening as closing brackets).
+			# Then check if the format can be found in the merged line.
+			mergedLine = line
+			i = lineNr - 1
+			while (i > 0):
+				curLine = lines[i]
+				for c in curLine[::-1]:
+					if c == ')':
+						brackets = brackets - 1
+					if c == '(':
+						brackets = brackets + 1
+				mergedLine = curLine + mergedLine
+				if brackets == 0:
+					# Looks like we're at the first opening bracket.
+					result = self.getLogFmtFromLine(mergedLine)
+					if result is not None:
+						return result
+				i = i - 1
+
+		_LOGGER.warning(f"Can't find log format in: {fileName[-30:]}:{lineNr} {line.rstrip()}")
+		return None
+
+
+
+	def getLogFmtFromLine(self, fileLine):
+		match = self.logPattern.match(fileLine)
 		if match:
 			return match.group(1)
-		match = self.rawLogPattern.match(line)
+
+		match = self.rawLogPattern.match(fileLine)
 		if match:
 			return match.group(1)
-		else:
-			_LOGGER.warning(f"Can't find log format in: {fileName[-30:]}:{lineNr} {line.rstrip()}")
-			return None
+
+		# Logs like: LOGi(FMT_INIT, "relay");
+		# The string definition file contains lines like: #define FMT_INIT     "Init %s"
+		# We search for the line with "FMT_INIT", and return "Init %s".
+		match = self.logDefinedStringPattern.match(fileLine)
+		stringsDefFileName = self.sourceFilesDir + "/include/cfg/cs_Strings.h"
+		if match and stringsDefFileName in self.bluenetFiles:
+			for strDefLine in self.bluenetFiles[stringsDefFileName]:
+				strDefWords = strDefLine.split()
+				if len(strDefWords) >= 3 and strDefWords[0] == "#define" and strDefWords[1] == match.group(1):
+					# Return the string, with quotes removed.
+					return " ".join(strDefWords[2:])[1:-1]
+
+		return None
+
+
 
 	def parse(self, buffer):
 		timestamp = datetime.datetime.now()
@@ -257,26 +312,32 @@ class UartLogParser:
 				elemVal = 0
 				if elementSize == 1:
 					elemVal = dataStepper.getInt8()
+					logStr += "%3i, " % elemVal
 				elif elementSize == 2:
 					elemVal = dataStepper.getInt16()
+					logStr += "%5i, " % elemVal
 				elif elementSize == 4:
 					elemVal = dataStepper.getInt32()
+					logStr += "%10i, " % elemVal
 				elif elementSize == 8:
 					elemVal = dataStepper.getInt64()
-				logStr += "%i, " % elemVal
+					logStr += "%20i, " % elemVal
 
 			elif elementType == 1:
 				# Unsigned integer
 				elemVal = 0
 				if elementSize == 1:
 					elemVal = dataStepper.getUInt8()
+					logStr += "%3u, " % elemVal
 				elif elementSize == 2:
 					elemVal = dataStepper.getUInt16()
+					logStr += "%5u, " % elemVal
 				elif elementSize == 4:
 					elemVal = dataStepper.getUInt32()
+					logStr += "%10u, " % elemVal
 				elif elementSize == 8:
 					elemVal = dataStepper.getUInt64()
-				logStr += "%u, " % elemVal
+					logStr += "%20u, " % elemVal
 
 			elif elementType == 2:
 				# Floating point
