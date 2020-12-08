@@ -15,6 +15,11 @@ class UartLogParser:
 
 	timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
+	# Whether to enable colors in logs.
+	enableColors = True
+	if sys.platform == "win32":
+		enableColors = False
+
 	# Key: filename
 	# Data: all lines in file as list.
 	bluenetFiles = {}
@@ -25,6 +30,9 @@ class UartLogParser:
 
 	# A list with the full path of all the source files (and maybe some more).
 	fileNames = []
+
+	# Whether the next log line should get a prefix.
+	printPrefix = True
 
 	class LogFlags:
 		prefix = False
@@ -71,8 +79,10 @@ class UartLogParser:
 		return hashVal
 
 	logPattern = re.compile(".*?LOG[a-zA-Z]+\(\"([^\"]*)\"")
-	logDefinedStringPattern = re.compile(".*?LOG[a-zA-Z]+\(([A-Z_]+)")
 	rawLogPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*\"([^\"]*)\"")
+
+	logDefinedStringPattern = re.compile(".*?LOG[a-zA-Z]+\(([A-Z_]+)")
+	rawLogDefinedStringPattern = re.compile(".*?_log\([^,]+,[^,]+,[^,]+,\s*([A-Z_]+)")
 
 	def getLogFmt(self, fileName, lineNr):
 		lines = self.bluenetFiles[fileName]
@@ -134,6 +144,8 @@ class UartLogParser:
 		# The string definition file contains lines like: #define FMT_INIT     "Init %s"
 		# We search for the line with "FMT_INIT", and return "Init %s".
 		match = self.logDefinedStringPattern.match(fileLine)
+		if not match:
+			match = self.rawLogDefinedStringPattern.match(fileLine)
 		stringsDefFileName = self.sourceFilesDir + "/include/cfg/cs_Strings.h"
 		if match and stringsDefFileName in self.bluenetFiles:
 			for strDefLine in self.bluenetFiles[stringsDefFileName]:
@@ -269,17 +281,17 @@ class UartLogParser:
 				i += 1
 
 			logStr = formattedString
-			# sys.stdout.write(f" {{ {flags} {logFlags.prefix} {logFlags.newLine} }} ")
-			if logFlags.prefix:
-				logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] {logStr}"
+			if self.printPrefix:
+				logStr = self.getPrefix(timestamp, fileName, lineNr, logLevel) + logStr
 
 			sys.stdout.write(logStr)
 			if logFlags.newLine:
-				# print(logStr)
+				# Next line should be prefixed.
+				self.printPrefix = True
+				sys.stdout.write(self.getEndColor())
 				sys.stdout.write('\n')
 			else:
-				# print(logStr, end='')
-				pass
+				self.printPrefix = False
 
 	def parseArray(self, buffer):
 		timestamp = datetime.datetime.now()
@@ -349,16 +361,44 @@ class UartLogParser:
 		# Remove last ", " and add closing bracket.
 		logStr = logStr[0:-2] + "]"
 
-		if logFlags.prefix:
-			logStr = f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] "
+		if self.printPrefix:
+			logStr = self.getPrefix(timestamp, fileName, lineNr, logLevel) + logStr
 
 		sys.stdout.write(logStr)
 		if logFlags.newLine:
-			# print(logStr)
+			# Next line should be prefixed.
+			self.printPrefix = True
+			sys.stdout.write(self.getEndColor())
 			sys.stdout.write('\n')
 		else:
-			# print(logStr, end='')
-			pass
+			self.printPrefix = False
+
+	def getPrefix(self, timestamp, fileName, lineNr, logLevel):
+		return f"LOG: [{timestamp.strftime(self.timestampFormat)}] [{fileName[-30:]}:{lineNr:4n}] {self.getLogLevelStr(logLevel)}{self.getLogLevelColor(logLevel)} "
+
+	def getLogLevelStr(self, logLevel):
+		if logLevel == 8: return "V"
+		if logLevel == 7: return "D"
+		if logLevel == 6: return "I"
+		if logLevel == 5: return "W"
+		if logLevel == 4: return "E"
+		if logLevel == 3: return "F"
+		return " "
+
+	def getLogLevelColor(self, logLevel):
+		if self.enableColors:
+			if logLevel == 8: return "\033[37;1m" # White
+			if logLevel == 7: return "\033[37;1m" # White
+			if logLevel == 6: return "\033[34;1m" # Blue
+			if logLevel == 5: return "\033[33;1m" # Yellow
+			if logLevel == 4: return "\033[35;1m" # Purple
+			if logLevel == 3: return "\033[31;1m" # Red
+		return ""
+
+	def getEndColor(self):
+		if self.enableColors:
+			return "\033[0m"
+		return ""
 
 if __name__ == "__main__":
 	uartLogParser = UartLogParser()
