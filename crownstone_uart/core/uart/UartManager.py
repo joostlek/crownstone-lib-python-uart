@@ -77,13 +77,13 @@ class UartManager(threading.Thread):
 
     def echo(self, string):
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(string).getPacket()
-        uartMessage   = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def writeHello(self):
         helloPacket = UartCommandHelloPacket().getPacket()
-        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.HELLO, helloPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.HELLO, helloPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 

@@ -60,7 +60,7 @@ class MeshHandler:
         controlPacket = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).getPacket()
 
         # wrap that in a uart message
-        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
 
         # finally wrap it in a uart wrapper packet
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
@@ -190,7 +190,7 @@ class MeshHandler:
         # flag value: 2
         corePacket    = MeshSetStatePacket(crownstone_id, packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector     = Collector(timeout=2,  topic=SystemTopics.resultPacket)
@@ -221,7 +221,7 @@ class MeshHandler:
         # value: 1
         corePacket = MeshBroadcastPacket(packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector = Collector(timeout=2, topic=SystemTopics.resultPacket)
@@ -248,7 +248,7 @@ class MeshHandler:
         # value: 3
         corePacket    = MeshBroadcastAckedPacket(crownstone_uid_array, packet).getPacket()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(self.libState.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
         resultCollector     = Collector(timeout=2, topic=SystemTopics.resultPacket)

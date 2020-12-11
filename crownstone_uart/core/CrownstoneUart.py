@@ -123,7 +123,7 @@ class CrownstoneUart:
         controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).getPacket()
 
         # wrap that in a uart message
-        uartMessage   = UartMessagePacket(self.state.deviceId, UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
 
         # finally, wrap it in an uart wrapper packet
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()

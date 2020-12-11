@@ -194,7 +194,7 @@ class UsbDevHandler:
 
     def _send(self, opCode: UartTxType, payload: list):
         # send over uart
-        uartMessage = UartMessagePacket(self.libState.deviceId, opCode, payload).getPacket()
+        uartMessage = UartMessagePacket(opCode, payload).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
         

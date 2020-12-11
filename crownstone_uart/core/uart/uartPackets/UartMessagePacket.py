@@ -11,18 +11,15 @@ _LOGGER = logging.getLogger(__name__)
 class UartMessagePacket:
 	"""
 	UART message packet:
-	1B device ID
 	2B data type (aka opcode)
 	xB data
 	"""
 
-	def __init__(self, deviceId: int = 0, opCode: UartTxType = UartTxType.UNKNOWN, payload: list = None):
+	def __init__(self, opCode: UartTxType = UartTxType.UNKNOWN, payload: list = None):
 		"""
-		:param deviceId:     uint8
 		:param opCode:       uint16 data type.
 		:param payload:      List of uint8, according to data type
 		"""
-		self.deviceId = deviceId
 		self.opCode = opCode
 		if payload is None:
 			self.payload = []
@@ -37,7 +34,6 @@ class UartMessagePacket:
 		"""
 		try:
 			streamBuf = DataStepper(buffer)
-			self.deviceId = streamBuf.getUInt8()
 			self.opCode = streamBuf.getUInt16()
 			self.payload = streamBuf.getRemainingBytes()
 			return True
@@ -50,7 +46,6 @@ class UartMessagePacket:
 
 		# construct the basePacket, which is used for CRC calculation
 		uartMsg = []
-		uartMsg.append(self.deviceId)
 		uartMsg += Conversion.uint16_to_uint8_array(self.opCode)
 		uartMsg += self.payload
 
