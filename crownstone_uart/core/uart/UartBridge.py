@@ -90,7 +90,7 @@ class UartBridge(threading.Thread):
             try:
                 self.serialController.write(data)
                 UartEventBus.emit(SystemTopics.uartWriteSuccess, data)
-            except serial.writeTimeoutError as e:
+            except serial.SerialTimeoutException as e:
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"Timeout on uart write.", "error": e})
             except serial.SerialException as e:
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"SerialException occurred during uart write", "error": e})
