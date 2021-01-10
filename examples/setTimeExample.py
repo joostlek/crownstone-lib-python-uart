@@ -20,9 +20,13 @@ async def run_example():
 	timestamp = time.time()
 
 	local_timestamp = getCorrectedLocalTimestamp(timestamp)
+	formattedtime = time.strftime("%Y/%m/%d %H:%M:%S",time.gmtime(local_timestamp))
+	print(F"setting time to: {local_timestamp}, (i.e. {formattedtime})")
+	
 	await uart.mesh.set_time(int(local_timestamp))
 
 	# stop the connection to the dongle
 	uart.stop()
+	
 
 asyncio.run(run_example())
