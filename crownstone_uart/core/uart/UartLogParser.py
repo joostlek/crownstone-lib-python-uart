@@ -397,7 +397,3 @@ class UartLogParser:
 			return "\033[0m"
 		return ""
 
-if __name__ == "__main__":
-	uartLogParser = UartLogParser()
-
-

@@ -41,6 +41,12 @@ class UartParser:
         UartEventBus.unsubscribe(self.uartMessageSubscription)
 
     def parse(self, wrapperPacket: UartWrapperPacket):
+        """
+        Callback for SystemTopics.uartNewPackage, emits a message of type SystemTopic.uartNewMessage
+        if the received message was of the correct protocol version and unencrypted.
+        :param wrapperPacket:
+        :return:
+        """
         if type(wrapperPacket) is not UartWrapperPacket:
             raise TypeError
 
@@ -61,6 +67,12 @@ class UartParser:
             return
 
     def handleUartMessage(self, messagePacket: UartMessagePacket):
+        """
+        Callback for SystemTopics.uartNewMessage. This transforms a select number of message types
+        into further specialized messages and posts those on UartEventBus.
+        :param messagePacket:
+        :return:
+        """
         opCode = messagePacket.opCode
         parsedData = None
         # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
@@ -145,9 +157,6 @@ class UartParser:
         elif opCode == UartRxType.HUB_DATA:
             pass
 
-
-
-
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
             serviceData = ServiceData(messagePacket.payload, unencrypted=True)
@@ -176,8 +185,6 @@ class UartParser:
             # for now, you can subscribe to SystemTopics.uartNewMessage
             pass
 
-
-
         elif opCode == UartRxType.LOG:
             _LOGGER.debug(f"Received binary log: {messagePacket.payload}")
             self.uartLogParser.parse(messagePacket.payload)
@@ -193,8 +200,6 @@ class UartParser:
 
         elif opCode == UartRxType.INTERNAL_EVENT:
             pass
-
-
 
         elif opCode == UartRxType.MESH_CMD_TIME:
             pass
