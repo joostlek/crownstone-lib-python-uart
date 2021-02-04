@@ -14,6 +14,8 @@ class UartLogParser:
 
 	timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
+	cacheFiles = False
+
 	# Whether to enable colors in logs.
 	enableColors = True
 	if sys.platform == "win32":
@@ -83,6 +85,12 @@ class UartLogParser:
 
 	def getLogFmt(self, fileName, lineNr):
 		lines = self.bluenetFiles[fileName]
+		if not self.cacheFiles:
+			try:
+				with open(fileName, 'r') as file:
+					lines = file.readlines()
+			except:
+				pass
 		lineNr = lineNr - 1 # List starts at 0, line numbers start at 1.
 
 		if lineNr < 0 or lineNr >= len(lines):
@@ -204,8 +212,11 @@ class UartLogParser:
 				argFmt = "%"   # Format of this arg
 				while True:
 					c = logFmt[i]
-					argBuf = argBufs[argNum]
-					argLen = len(argBuf)
+					argBuf = None
+					argLen = 0
+					if argNum < len(argBufs):
+						argBuf = argBufs[argNum]
+						argLen = len(argBuf)
 
 					if c == 'd' or c == 'i':
 						# Signed integer
@@ -261,7 +272,9 @@ class UartLogParser:
 
 					elif c == 's':
 						# String
-						argVal = Conversion.uint8_array_to_string(argBuf)
+						argVal = ""
+						if argBuf is not None:
+							argVal = Conversion.uint8_array_to_string(argBuf)
 
 						argFmt += c
 						break
