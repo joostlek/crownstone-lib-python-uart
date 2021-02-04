@@ -26,10 +26,10 @@ _LOGGER = logging.getLogger(__name__)
 
 class UartManager(threading.Thread):
 
-    def __init__(self, libState: CrownstoneUartState):
-        self.libState = libState
+    def __init__(self):
         self.port = None
         self.baudRate = 230400
+        self.writeChunkMaxSize = 0
         self.running = True
         self.loop = None
         self._availablePorts = list(list_ports.comports())
@@ -43,9 +43,10 @@ class UartManager(threading.Thread):
     def __del__(self):
         self.stop()
 
-    def config(self, port, baudRate = 230400):
+    def config(self, port, baudRate = 230400, writeChunkMaxSize=0):
         self.port     = port
         self.baudRate = baudRate
+        self.writeChunkMaxSize = writeChunkMaxSize
 
     def run(self):
         self.loop = asyncio.new_event_loop()
@@ -132,7 +133,7 @@ class UartManager(threading.Thread):
 
     def setupConnection(self, port, handshake=True):
         _LOGGER.debug(F"Setting up connection...{port} {self.baudRate} {handshake}")
-        self._uartBridge = UartBridge(port, self.baudRate)
+        self._uartBridge = UartBridge(port, self.baudRate, self.writeChunkMaxSize)
         self._uartBridge.start()
 
         # wait for the bridge to initialize

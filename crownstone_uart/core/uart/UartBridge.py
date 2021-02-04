@@ -16,9 +16,10 @@ _LOGGER = logging.getLogger(__name__)
 
 class UartBridge(threading.Thread):
 
-    def __init__(self, port, baudrate):
+    def __init__(self, port, baudrate, writeChunkMaxSize=0):
         self.baudrate = baudrate
         self.port = port
+        self.writeChunkMaxSize = writeChunkMaxSize
 
         self.serialController = None
         self.started = False
@@ -30,6 +31,7 @@ class UartBridge(threading.Thread):
 
     def __del__(self):
         self.stop()
+
 
     def run(self):
         self.start_serial()
@@ -88,7 +90,17 @@ class UartBridge(threading.Thread):
         _LOGGER.debug(f"write_to_uart: {data}")
         if self.serialController is not None and self.started:
             try:
-                self.serialController.write(data)
+                if self.writeChunkMaxSize == 0:
+                    self.serialController.write(data)
+                else:
+                    # writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+                    chunkSize = self.writeChunkMaxSize
+                    index = 0
+                    while (index*chunkSize) < len(data):
+                        chunkedData = data[index*chunkSize:chunkSize*(index+1)]
+                        index += 1
+                        self.serialController.write(chunkedData)
+
                 UartEventBus.emit(SystemTopics.uartWriteSuccess, data)
             except serial.SerialTimeoutException as e:
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"Timeout on uart write.", "error": e})

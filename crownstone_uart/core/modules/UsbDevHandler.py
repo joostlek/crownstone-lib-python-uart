@@ -11,9 +11,6 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 class UsbDevHandler:
     
-    def __init__(self, libState: CrownstoneUartState):
-        self.libState = libState
-    
     def setAdvertising(self, enabled):
         """
             Enable/ disable the advertising

@@ -30,16 +30,13 @@ class CrownstoneUart:
         else:
             self.loop = loop
 
-        # Keep up settings and state
-        self.state = CrownstoneUartState(deviceId=0)
-
-        self.uartManager = UartManager(self.state)
+        self.uartManager = UartManager()
         
         self.stoneManager = StoneManager()
 
-        self.mesh = MeshHandler(self.state)
+        self.mesh = MeshHandler()
         # only for development. Generally undocumented.
-        self._usbDev = UsbDevHandler(self.state)
+        self._usbDev = UsbDevHandler()
 
     def __del__(self):
         self.stop()
@@ -47,8 +44,18 @@ class CrownstoneUart:
     def is_ready(self) -> bool:
         return self.uartManager.is_ready()
 
-    async def initialize_usb(self, port = None, baudrate=230400):
-        self.uartManager.config(port, baudrate)
+
+    async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
+        '''
+        writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+        For normal usage with Crownstones this is not required.
+        writeChunkMaxSize of 0 will not send the payload in chunks
+        :param port:
+        :param baudrate:
+        :param writeChunkMaxSize:
+        :return:
+        '''
+        self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
         result = [False]
         def handleMessage(result, data):
@@ -63,8 +70,17 @@ class CrownstoneUart:
         UartEventBus.unsubscribe(event)
         
 
-    def initialize_usb_sync(self, port = None, baudrate=230400):
-        self.uartManager.config(port, baudrate)
+    def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
+        '''
+                writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+                For normal usage with Crownstones this is not required.
+                writeChunkMaxSize of 0 will not send the payload in chunks
+                :param port:
+                :param baudrate:
+                :param writeChunkMaxSize:
+                :return:
+                '''
+        self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
         result = [False]
 

@@ -21,10 +21,6 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 class MeshHandler:
 
-    def __init__(self, libState: CrownstoneUartState):
-        self.libState = libState
-
-
     def turn_crownstone_on(self, crownstone_id: int):
         self._switch_crownstone(crownstone_id, SwitchValSpecial.SMART_ON)
 
