@@ -8,7 +8,6 @@ from crownstone_core.protocol.BluenetTypes import ControlType, StateType, Result
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
 from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket, MeshSetStatePacket, MeshBroadcastPacket, MeshBroadcastAckedPacket
 
-from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.containerClasses.MeshResult import MeshResult
 from crownstone_uart.core.dataFlowManagers.BatchCollector import BatchCollector
 from crownstone_uart.core.dataFlowManagers.Collector import Collector

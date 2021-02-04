@@ -1,7 +1,6 @@
 from crownstone_core.protocol.BlePackets import ControlStateSetPacket, ControlPacket
 from crownstone_core.protocol.BluenetTypes import StateType, ControlType
 
-from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType

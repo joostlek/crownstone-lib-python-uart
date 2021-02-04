@@ -4,7 +4,6 @@ import time
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 
-from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
 
