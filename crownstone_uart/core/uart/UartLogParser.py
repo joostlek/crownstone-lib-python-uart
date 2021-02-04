@@ -212,8 +212,11 @@ class UartLogParser:
 				argFmt = "%"   # Format of this arg
 				while True:
 					c = logFmt[i]
-					argBuf = argBufs[argNum]
-					argLen = len(argBuf)
+					argBuf = None
+					argLen = 0
+					if argNum < len(argBufs):
+						argBuf = argBufs[argNum]
+						argLen = len(argBuf)
 
 					if c == 'd' or c == 'i':
 						# Signed integer
@@ -269,7 +272,9 @@ class UartLogParser:
 
 					elif c == 's':
 						# String
-						argVal = Conversion.uint8_array_to_string(argBuf)
+						argVal = ""
+						if argBuf is not None:
+							argVal = Conversion.uint8_array_to_string(argBuf)
 
 						argFmt += c
 						break
