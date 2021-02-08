@@ -36,8 +36,6 @@ class UartWriter:
         self.cleanupIds.append(UartEventBus.subscribe(SystemTopics.uartWriteSuccess, self._handleSuccess))
         self.cleanupIds.append(UartEventBus.subscribe(SystemTopics.uartWriteError,   self._handleError))
 
-        self.t = time.time_ns()
-
     def __del__(self):
         for cleanupId in self.cleanupIds:
             UartEventBus.unsubscribe(cleanupId)
