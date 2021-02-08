@@ -6,7 +6,6 @@ import time
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 
-from crownstone_uart.core.containerClasses.CrownstoneUartState import CrownstoneUartState
 from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.uart.uartPackets.UartCommandHelloPacket import UartCommandHelloPacket
 from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
