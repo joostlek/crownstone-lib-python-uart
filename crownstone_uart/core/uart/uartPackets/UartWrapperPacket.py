@@ -2,9 +2,9 @@ import logging
 
 from crownstone_core.Exceptions import CrownstoneError
 from crownstone_core.util.Conversion import Conversion
-from crownstone_uart.util.UartUtil import UartUtil
 from crownstone_uart.core.uart.UartTypes import UartMessageType
 from crownstone_core.util.DataStepper import DataStepper
+from crownstone_core.util.CRC import CRC_16_CCITT
 
 PROTOCOL_MAJOR = 1
 PROTOCOL_MINOR = 0
@@ -94,7 +94,7 @@ class UartWrapperPacket:
 		packet += self.payload
 
 		# Calculate the CRC of the packet
-		packetCrc = UartUtil.crc16_ccitt(packet)
+		packetCrc = CRC_16_CCITT.crc(packet)
 
 		# Append the CRC to the base packet to escape the entire thing
 		packet += Conversion.uint16_to_uint8_array(packetCrc)

@@ -21,19 +21,3 @@ class UartUtil:
 	@staticmethod
 	def uartUnescape(val):
 		return val ^ UartUtil.UART_ESCAPE_FLIP_MASK
-
-	# Copied implementation of nordic
-	@staticmethod
-	def crc16_ccitt(arr8):
-		"""
-		:param arr8:
-		:return:
-		"""
-		crc = 0xFFFF
-		for i in range(0, len(arr8)):
-			crc = (crc >> 8 & 0xFF) | (crc << 8 & 0xFFFF)
-			crc ^= arr8[i]
-			crc ^= (crc & 0xFF) >> 4
-			crc ^= (crc << 8 & 0xFFFF) << 4 & 0xFFFF
-			crc ^= ((crc & 0xFF) << 4 & 0xFFFF) << 1 & 0xFFFF
-		return crc
