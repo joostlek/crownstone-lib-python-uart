@@ -32,3 +32,5 @@ class UartTopics:
 
     hello = "UART_hello" # Data is: UartCrownstoneHelloPacket
 
+    log = "UART_log" # Data is UartLogPacket
+    logArray = "UART_logArray" # Data is UartLogArrayPacket

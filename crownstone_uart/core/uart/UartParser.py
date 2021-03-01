@@ -9,6 +9,8 @@ from crownstone_core.util.Conversion import Conversion
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartLogParser import UartLogParser
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.UartLogArrayPacket import UartLogArrayPacket
+from crownstone_uart.core.uart.uartPackets.UartLogPacket import UartLogPacket
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket, PROTOCOL_MAJOR
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
@@ -187,10 +189,14 @@ class UartParser:
 
         elif opCode == UartRxType.LOG:
             _LOGGER.debug(f"Received binary log: {messagePacket.payload}")
+            packet = UartLogPacket(messagePacket.payload)
+            UartEventBus.emit(UartTopics.log, packet)
             self.uartLogParser.parse(messagePacket.payload)
 
         elif opCode == UartRxType.LOG_ARRAY:
             _LOGGER.debug(f"Received binary log array: {messagePacket.payload}")
+            packet = UartLogArrayPacket(messagePacket.payload)
+            UartEventBus.emit(UartTopics.logArray, packet)
             self.uartLogParser.parseArray(messagePacket.payload)
 
 
