@@ -1,42 +1,37 @@
 import logging
 
-from crownstone_core.Exceptions import CrownstoneError
+from crownstone_core.packets.BasePacket import BasePacket
 from crownstone_core.util.DataStepper import DataStepper
 
 from crownstone_uart.core.uart.uartPackets.UartLogHeaderPacket import UartLogHeaderPacket
 
 _LOGGER = logging.getLogger(__name__)
 
-class UartLogPacket:
+class UartLogPacket(BasePacket):
 	"""
 	UART log packet
 	"""
 
-	def __init__(self, buffer: list = None):
+	def __init__(self, data = None):
 		self.header = UartLogHeaderPacket()
 		self.numArgs = 0
 
 		# List of buffers, one for each argument.
 		self.argBufs = []
 
-		if buffer != None:
-			self.parse(buffer)
+		if data != None:
+			self.parse(data)
 
-	def parse(self, buffer: list):
-		"""
-		Parses data.
+	def _parse(self, dataStepper: DataStepper):
+		self.header.parse(dataStepper)
+		self.numArgs = dataStepper.getUInt8()
+		self.argBufs = []
+		for i in range(0, self.numArgs):
+			argSize = dataStepper.getUInt8()
+			self.argBufs.append(dataStepper.getAmountOfBytes(argSize))
 
-		:returns True on success.
-		"""
-		try:
-			streamBuf = DataStepper(buffer)
-			self.header.parse([], streamBuf)
-			self.numArgs = streamBuf.getUInt8()
-			self.argBufs = []
-			for i in range(0, self.numArgs):
-				argSize = streamBuf.getUInt8()
-				self.argBufs.append(streamBuf.getAmountOfBytes(argSize))
-			return True
-		except CrownstoneError as e:
-			_LOGGER.warning(F"Parse error: {e}")
-			return False
+	def __str__(self):
+		return f"UartLogPacket(" \
+		       f"header={self.header}, " \
+		       f"numArgs={self.numArgs}, " \
+		       f"argBufs={self.argBufs})"
