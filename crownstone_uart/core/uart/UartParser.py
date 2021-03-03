@@ -191,13 +191,11 @@ class UartParser:
             _LOGGER.debug(f"Received binary log: {messagePacket.payload}")
             packet = UartLogPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.log, packet)
-            self.uartLogParser.parse(messagePacket.payload)
 
         elif opCode == UartRxType.LOG_ARRAY:
             _LOGGER.debug(f"Received binary log array: {messagePacket.payload}")
             packet = UartLogArrayPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.logArray, packet)
-            self.uartLogParser.parseArray(messagePacket.payload)
 
 
         ####################
