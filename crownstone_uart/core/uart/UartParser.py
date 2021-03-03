@@ -5,10 +5,10 @@ import datetime
 from crownstone_core.Exceptions import CrownstoneError
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
+from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
 from crownstone_core.util.Conversion import Conversion
 
 from crownstone_uart.core.UartEventBus import UartEventBus
-from crownstone_uart.core.uart.UartLogParser import UartLogParser
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartLogArrayPacket import UartLogArrayPacket
 from crownstone_uart.core.uart.uartPackets.UartLogPacket import UartLogPacket
@@ -17,7 +17,6 @@ from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperP
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
 from crownstone_uart.core.uart.uartPackets.CurrentSamplesPacket import CurrentSamplesPacket
 from crownstone_uart.core.uart.uartPackets.PowerCalculationPacket import PowerCalculationPacket
-from crownstone_uart.core.uart.uartPackets.StoneStatePacket import StoneStatePacket
 from crownstone_uart.core.uart.uartPackets.VoltageSamplesPacket import VoltageSamplesPacket
 from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.topics.DevTopics import DevTopics
@@ -36,7 +35,6 @@ class UartParser:
     def __init__(self):
         self.uartPackageSubscription = UartEventBus.subscribe(SystemTopics.uartNewPackage, self.parse)
         self.uartMessageSubscription = UartEventBus.subscribe(SystemTopics.uartNewMessage, self.handleUartMessage)
-        self.uartLogParser = UartLogParser()
         self.timestampFormat = "%Y-%m-%d %H:%M:%S.%f"
 
     def stop(self):
@@ -154,8 +152,7 @@ class UartParser:
         elif opCode == UartRxType.OWN_SERVICE_DATA:
             # service data type + device type + data type + service data (15b)
             serviceData = ServiceData(messagePacket.payload)
-            if serviceData.validData:
-                UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
+            UartEventBus.emit(DevTopics.newServiceData, serviceData.payload)
 
         elif opCode == UartRxType.PRESENCE_CHANGE:
             pass
@@ -172,9 +169,9 @@ class UartParser:
 
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
-            serviceData = ServiceData(messagePacket.payload, unencrypted=True)
-            statePacket = StoneStatePacket(serviceData)
-            statePacket.broadcastState()
+            result = parseOpcode7(messagePacket.payload)
+            if hasattr(result,"crownstoneId"):
+                UartEventBus.emit(SystemTopics.stateUpdate, (result.crownstoneId, result))
             # if serviceData.validData:
             #     UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
 
@@ -263,8 +260,6 @@ class UartParser:
         #     else:
         #         print("invalid address:", messagePacket.payload)
 
-
-
         elif opCode == UartRxType.ADC_CONFIG:
             # type is PowerCalculationsPacket
             parsedData = AdcConfigPacket(messagePacket.payload)
@@ -272,8 +267,6 @@ class UartParser:
 
         elif opCode == UartRxType.ADC_RESTART:
             UartEventBus.emit(DevTopics.adcRestarted, None)
-
-
 
         elif opCode == UartRxType.POWER_LOG_CURRENT:
             # type is CurrentSamples
@@ -299,8 +292,6 @@ class UartParser:
             # type is PowerCalculationsPacket
             parsedData = PowerCalculationPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newCalculatedPowerData, parsedData.getDict())
-
-
 
         elif opCode == UartRxType.ASCII_LOG:
             timestamp = datetime.datetime.now()

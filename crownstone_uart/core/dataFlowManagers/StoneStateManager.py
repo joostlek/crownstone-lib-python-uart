@@ -9,20 +9,21 @@ class StoneStateManager:
         UartEventBus.subscribe(SystemTopics.stateUpdate, self.handleStateUpdate)
 
     def handleStateUpdate(self, data):
-        stoneId = data[0]
-        stoneStatePacket = data[1]
+        stoneId    = data[0]
+        advPayload = data[1]
 
         if stoneId in self.stones:
-            if self.stones[stoneId]["timestamp"] < stoneStatePacket.serviceData.timestamp:
-                self.stones[stoneId] = stoneStatePacket.getSummary()
-                self.emitNewData(stoneStatePacket)
+            if hasattr(advPayload, 'timestamp'):
+                if self.stones[stoneId].timestamp < advPayload.timestamp:
+                    self.stones[stoneId] = advPayload
+                    self.emitNewData(advPayload)
         else:
             UartEventBus.emit(SystemTopics.newCrownstoneFound, stoneId)
-            self.stones[stoneId] = stoneStatePacket.getSummary()
-            self.emitNewData(stoneStatePacket)
+            self.stones[stoneId] = advPayload
+            self.emitNewData(advPayload)
     
-    def emitNewData(self, stoneStatePacket):
-        UartEventBus.emit(UartTopics.newDataAvailable, stoneStatePacket.getSummary())
+    def emitNewData(self, advPayload):
+        UartEventBus.emit(UartTopics.newDataAvailable, advPayload)
 
     def getIds(self):
         ids = []

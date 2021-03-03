@@ -25,8 +25,8 @@ try:
 		ids = uart.get_crownstone_ids()
 		print("Crownstone IDs seen so far:", ids, "after", round(time.time() - initial_time), "seconds")
 except KeyboardInterrupt:
-	print("\nClosing example.... Thanks for your time!")
+	print("\nClosing example.... Thank you for your time!")
 except:
-	print("\nClosing example.... Thanks for your time!")
+	print("\nClosing example.... Thanks you for your time!")
 
 uart.stop()
