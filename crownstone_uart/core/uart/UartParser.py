@@ -2,6 +2,7 @@ import sys
 import logging
 import datetime
 
+from crownstone_core.Exceptions import CrownstoneError
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.util.Conversion import Conversion
@@ -69,6 +70,15 @@ class UartParser:
             return
 
     def handleUartMessage(self, messagePacket: UartMessagePacket):
+        try:
+            self._handleUartMessage(messagePacket)
+        except CrownstoneError as e:
+            # TODO: don't we catch too many errors this way
+            #  For example errors from code executed by emitted events.
+            #  We only want to catch parse errors, but we're too lazy to put a try catch around every parse call.
+            _LOGGER.warning(f"Parse error: {e}")
+
+    def _handleUartMessage(self, messagePacket: UartMessagePacket):
         """
         Callback for SystemTopics.uartNewMessage. This transforms a select number of message types
         into further specialized messages and posts those on UartEventBus.
@@ -78,6 +88,7 @@ class UartParser:
         opCode = messagePacket.opCode
         parsedData = None
         # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
+
         if opCode == UartRxType.HELLO:
             helloPacket = UartCrownstoneHelloPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.hello, helloPacket)
@@ -268,22 +279,22 @@ class UartParser:
             # type is CurrentSamples
             parsedData = CurrentSamplesPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newCurrentData, parsedData.getDict())
-            
+
         elif opCode == UartRxType.POWER_LOG_VOLTAGE:
             # type is VoltageSamplesPacket
             parsedData = VoltageSamplesPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newVoltageData, parsedData.getDict())
-            
+
         elif opCode == UartRxType.POWER_LOG_FILTERED_CURRENT:
             # type is CurrentSamples
             parsedData = CurrentSamplesPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newFilteredCurrentData, parsedData.getDict())
-            
+
         elif opCode == UartRxType.POWER_LOG_FILTERED_VOLTAGE:
             # type is VoltageSamplesPacket
             parsedData = VoltageSamplesPacket(messagePacket.payload)
             UartEventBus.emit(DevTopics.newFilteredVoltageData, parsedData.getDict())
-            
+
         elif opCode == UartRxType.POWER_LOG_POWER:
             # type is PowerCalculationsPacket
             parsedData = PowerCalculationPacket(messagePacket.payload)
@@ -305,11 +316,8 @@ class UartParser:
             # no need to process this, that's in the test suite.
             pass
 
-
-
         else:
             _LOGGER.warning(f"Unknown opCode: {opCode}")
 
-        
         parsedData = None
         
