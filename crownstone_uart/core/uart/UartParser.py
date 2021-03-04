@@ -152,6 +152,7 @@ class UartParser:
         elif opCode == UartRxType.OWN_SERVICE_DATA:
             # service data type + device type + data type + service data (15b)
             serviceData = ServiceData(messagePacket.payload)
+            serviceData.parse()
             UartEventBus.emit(DevTopics.newServiceData, serviceData.payload)
 
         elif opCode == UartRxType.PRESENCE_CHANGE:
@@ -172,8 +173,6 @@ class UartParser:
             result = parseOpcode7(messagePacket.payload)
             if hasattr(result,"crownstoneId"):
                 UartEventBus.emit(SystemTopics.stateUpdate, (result.crownstoneId, result))
-            # if serviceData.validData:
-            #     UartEventBus.emit(DevTopics.newServiceData, serviceData.getDictionary())
 
         elif opCode == UartRxType.EXTERNAL_STATE_PART_0:
             pass
