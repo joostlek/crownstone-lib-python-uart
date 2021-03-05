@@ -1,6 +1,5 @@
-import sys
-import logging
 import datetime
+import logging
 
 from crownstone_core.Exceptions import CrownstoneError
 from crownstone_core.packets.ResultPacket import ResultPacket
@@ -10,15 +9,15 @@ from crownstone_core.util.Conversion import Conversion
 
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
+from crownstone_uart.core.uart.uartPackets.CurrentSamplesPacket import CurrentSamplesPacket
+from crownstone_uart.core.uart.uartPackets.PowerCalculationPacket import PowerCalculationPacket
+from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.core.uart.uartPackets.UartLogArrayPacket import UartLogArrayPacket
 from crownstone_uart.core.uart.uartPackets.UartLogPacket import UartLogPacket
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket, PROTOCOL_MAJOR
-from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
-from crownstone_uart.core.uart.uartPackets.CurrentSamplesPacket import CurrentSamplesPacket
-from crownstone_uart.core.uart.uartPackets.PowerCalculationPacket import PowerCalculationPacket
 from crownstone_uart.core.uart.uartPackets.VoltageSamplesPacket import VoltageSamplesPacket
-from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 from crownstone_uart.topics.UartTopics import UartTopics

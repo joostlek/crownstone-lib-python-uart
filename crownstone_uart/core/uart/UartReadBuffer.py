@@ -1,3 +1,4 @@
+from crownstone_core.util.CRC import crc16ccitt
 from crownstone_core.util.Conversion import Conversion
 import logging
 
@@ -6,7 +7,6 @@ from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import SIZE_HEADER_
     ESCAPE_TOKEN, BIT_FLIP_MASK, UartWrapperPacket
 from crownstone_uart.topics.DevTopics import DevTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from crownstone_core.util.CRC import CRC_16_CCITT
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class UartReadBuffer:
         baseBuffer = self.buffer[0 : bufferSize - CRC_SIZE]
 
         # Check CRC
-        calculatedCrc = CRC_16_CCITT.crc(baseBuffer)
+        calculatedCrc = crc16ccitt(baseBuffer)
         sourceCrc = Conversion.uint8_array_to_uint16(self.buffer[bufferSize - CRC_SIZE : ])
 
         if calculatedCrc != sourceCrc:

@@ -1,4 +1,4 @@
-from crownstone_core.util.DataStepper import DataStepper
+from crownstone_core.util.BufferReader import BufferReader
 
 
 class UartCrownstoneStatusPacket:
@@ -7,13 +7,13 @@ class UartCrownstoneStatusPacket:
     1B flags
     """
 
-    def __init__(self, buffer):
-        if isinstance(buffer, DataStepper):
-            streamBuf = buffer
+    def __init__(self, buffer: BufferReader or list or bytearray):
+        if isinstance(buffer, BufferReader):
+            reader = buffer
         else:
-            streamBuf = DataStepper(buffer)
+            reader = BufferReader(buffer)
 
-        self.flags = streamBuf.getUInt8()
+        self.flags = reader.getUInt8()
 
         # Parse flags
         self.encryptionRequired = self.flags & (1 << 0) != 0

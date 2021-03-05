@@ -1,8 +1,8 @@
 import logging
 
 from crownstone_core.Exceptions import CrownstoneError
+from crownstone_core.util.BufferReader import BufferReader
 from crownstone_core.util.Conversion import Conversion
-from crownstone_core.util.DataStepper import DataStepper
 
 from crownstone_uart.core.uart.UartTypes import UartTxType
 
@@ -26,16 +26,16 @@ class UartMessagePacket:
 		else:
 			self.payload = payload
 
-	def parse(self, buffer: list):
+	def parse(self, data: list):
 		"""
 		Parses data.
 
 		:returns True on success.
 		"""
 		try:
-			streamBuf = DataStepper(buffer)
-			self.opCode = streamBuf.getUInt16()
-			self.payload = streamBuf.getRemainingBytes()
+			reader = BufferReader(data)
+			self.opCode = reader.getUInt16()
+			self.payload = reader.getRemainingBytes()
 			return True
 		except CrownstoneError as e:
 			_LOGGER.warning(F"Parse error: {e}")

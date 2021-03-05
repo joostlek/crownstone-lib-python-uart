@@ -145,7 +145,7 @@ class UsbDevHandler:
             :param mode: : 0=none 1=RX only, 2=TX only, 3=TX and RX
             :return:
         """
-        if ((mode < 0) or (mode > 3)):
+        if (mode < 0) or (mode > 3):
             return
         controlPacket = ControlStateSetPacket(StateType.UART_ENABLED).loadUInt8(mode).getPacket()
         self._send(UartTxType.CONTROL, controlPacket)

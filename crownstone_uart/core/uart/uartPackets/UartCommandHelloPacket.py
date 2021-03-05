@@ -1,8 +1,3 @@
-from crownstone_core import Conversion
-from crownstone_core.util.DataStepper import DataStepper
-
-from crownstone_uart.core.uart.uartPackets.UartCrownstoneStatusPacket import UartCrownstoneStatusPacket
-
 class UartCommandHelloPacket:
     """
     UART command hello packet:

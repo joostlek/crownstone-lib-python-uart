@@ -1,7 +1,7 @@
 import logging
 
 from crownstone_core.packets.BasePacket import BasePacket
-from crownstone_core.util.DataStepper import DataStepper
+from crownstone_core.util.BufferReader import BufferReader
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -22,15 +22,15 @@ class UartLogHeaderPacket(BasePacket):
 		# Flags:
 		self.newLine = False
 
-		if data != None:
+		if data is not None:
 			self.parse(data)
 
-	def _parse(self, dataStepper: DataStepper):
-		self.fileNameHash = dataStepper.getUInt32()
-		self.lineNr = dataStepper.getUInt16()
-		self.logLevel = dataStepper.getUInt8()
+	def _parse(self, reader: BufferReader):
+		self.fileNameHash = reader.getUInt32()
+		self.lineNr = reader.getUInt16()
+		self.logLevel = reader.getUInt8()
 
-		flags = dataStepper.getUInt8()
+		flags = reader.getUInt8()
 		self.newLine = (flags & (1 << 0)) != 0
 
 	def __str__(self):

@@ -1,7 +1,7 @@
 import logging
 
 from crownstone_core.packets.BasePacket import BasePacket
-from crownstone_core.util.DataStepper import DataStepper
+from crownstone_core.util.BufferReader import BufferReader
 
 from crownstone_uart.core.uart.uartPackets.UartLogHeaderPacket import UartLogHeaderPacket
 
@@ -17,14 +17,14 @@ class UartLogArrayPacket(BasePacket):
 		self.elementType = None
 		self.elementSize = 0
 		self.elementData = None
-		if data != None:
+		if data is not None:
 			self.parse(data)
 
-	def _parse(self, dataStepper: DataStepper):
-		self.header.parse(dataStepper)
-		self.elementType = dataStepper.getUInt8()
-		self.elementSize = dataStepper.getUInt8()
-		self.elementData = dataStepper.getRemainingBytes()
+	def _parse(self, reader: BufferReader):
+		self.header.parse(reader)
+		self.elementType = reader.getUInt8()
+		self.elementSize = reader.getUInt8()
+		self.elementData = reader.getRemainingBytes()
 
 	def __str__(self):
 		return f"UartLogArrayPacket(" \

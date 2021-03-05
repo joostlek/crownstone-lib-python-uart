@@ -1,10 +1,10 @@
 import logging
 
 from crownstone_core.Exceptions import CrownstoneError
+from crownstone_core.util.BufferReader import BufferReader
+from crownstone_core.util.CRC import crc16ccitt
 from crownstone_core.util.Conversion import Conversion
 from crownstone_uart.core.uart.UartTypes import UartMessageType
-from crownstone_core.util.DataStepper import DataStepper
-from crownstone_core.util.CRC import CRC_16_CCITT
 
 PROTOCOL_MAJOR = 1
 PROTOCOL_MINOR = 0
@@ -71,12 +71,12 @@ class UartWrapperPacket:
 
 		:returns True on success.
 		"""
-		streamBuf = DataStepper(buffer)
+		reader = BufferReader(buffer)
 		try:
-			self.protocolMajor = streamBuf.getUInt8()
-			self.protocolMinor = streamBuf.getUInt8()
-			self.messageType = streamBuf.getUInt8()
-			self.payload = streamBuf.getRemainingBytes()
+			self.protocolMajor = reader.getUInt8()
+			self.protocolMinor = reader.getUInt8()
+			self.messageType   = reader.getUInt8()
+			self.payload       = reader.getRemainingBytes()
 			return True
 		except CrownstoneError as e:
 			_LOGGER.warning(F"Parse error: {e}")
@@ -94,7 +94,7 @@ class UartWrapperPacket:
 		packet += self.payload
 
 		# Calculate the CRC of the packet
-		packetCrc = CRC_16_CCITT.crc(packet)
+		packetCrc = crc16ccitt(packet)
 
 		# Append the CRC to the base packet to escape the entire thing
 		packet += Conversion.uint16_to_uint8_array(packetCrc)

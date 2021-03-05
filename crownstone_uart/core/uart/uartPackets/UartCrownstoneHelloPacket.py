@@ -1,4 +1,4 @@
-from crownstone_core.util.DataStepper import DataStepper
+from crownstone_core.util.BufferReader import BufferReader
 
 from crownstone_uart.core.uart.uartPackets.UartCrownstoneStatusPacket import UartCrownstoneStatusPacket
 
@@ -8,13 +8,13 @@ class UartCrownstoneHelloPacket:
     1B sphereId
     1B status
     """
-    def __init__(self, buffer):
-        if isinstance(buffer, DataStepper):
-            streamBuf = buffer
+    def __init__(self, data):
+        if isinstance(data, BufferReader):
+            reader = data
         else:
-            streamBuf = DataStepper(buffer)
+            reader = BufferReader(data)
 
         # Parse buffer
-        self.sphereId = streamBuf.getUInt8()
+        self.sphereId = reader.getUInt8()
 
-        self.status = UartCrownstoneStatusPacket(streamBuf)
+        self.status = UartCrownstoneStatusPacket(reader)
