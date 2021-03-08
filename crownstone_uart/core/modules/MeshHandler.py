@@ -7,6 +7,7 @@ from crownstone_core.protocol.BlePackets import ControlPacket, ControlStateSetPa
 from crownstone_core.protocol.BluenetTypes import ControlType, StateType, ResultValue, SwitchValSpecial
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
 from crownstone_core.protocol.MeshPackets import MeshMultiSwitchPacket, StoneMultiSwitchPacket, MeshSetStatePacket, MeshBroadcastPacket, MeshBroadcastAckedPacket
+from crownstone_core.util.Timestamp import getCorrectedLocalTimestamp
 
 from crownstone_uart.core.containerClasses.MeshResult import MeshResult
 from crownstone_uart.core.dataFlowManagers.BatchCollector import BatchCollector
@@ -68,7 +69,9 @@ class MeshHandler:
         if timestamp is None:
             timestamp = math.ceil(time.time())
 
-        time_packet = ControlPacketsGenerator.getSetTimePacket(timestamp)
+        localizedTimeStamp = getCorrectedLocalTimestamp(timestamp)
+
+        time_packet = ControlPacketsGenerator.getSetTimePacket(localizedTimeStamp)
         await self._command_via_mesh_broadcast(time_packet)
 
 
