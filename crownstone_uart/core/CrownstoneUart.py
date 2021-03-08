@@ -20,7 +20,7 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 
 class CrownstoneUart:
-    __version__ = "1.0.0"
+    __version__ = "2.0.0"
 
     def __init__(self, loop=None):
         self.uartManager = None

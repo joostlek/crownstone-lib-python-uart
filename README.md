@@ -10,8 +10,8 @@ This module is written in Python 3 and needs Python 3.7 or higher. The reason fo
 
 If you want to use python virtual environments, take a look at the [README_VENV](README_VENV.MD)
 
-You can install the package by pip
-```python
+You can install the package by pip:
+```
 pip3 install crownstone-uart
 ```
 If you prefer the cutting edge (which may not always work!) or want to work on the library itself, use the setuptools.
@@ -77,11 +77,6 @@ Firstly run the example script that simply lists the IDs of the Crownstones. The
 $ python3 ./examples/discoveryExample.py
 ```
 
-Some systems may require calling python3 specifically:
-```
-$ python3 ./examples/discoveryExample.py
-```
-
 Once some IDs are printed, use one of them for the next example. This can take a while because Crownstones, if not switched, only broadcast their state every 60 seconds.
 
 
@@ -89,13 +84,9 @@ Once some IDs are printed, use one of them for the next example. This can take a
 
 After filling in the port to use, and the Crownstone ID to switch, run the example with python 3:
 ```
-$ python example.py
+$ python3 ./examples/example.py
 ```
 
-Some systems may require calling python3 specifically:
-```
-$ python3 example.py
-```
 
 ## The code
 
