@@ -27,6 +27,6 @@ try:
 except KeyboardInterrupt:
 	print("\nClosing example.... Thank you for your time!")
 except:
-	print("\nClosing example.... Thanks you for your time!")
+	print("\nClosing example.... Thank you for your time!")
 
 uart.stop()
