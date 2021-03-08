@@ -8,21 +8,18 @@ This works on all platforms and requires a **Crownstone USB** to work.
 
 This module is written in Python 3 and needs Python 3.7 or higher. The reason for this is that most of the asynchronous processes use the embedded asyncio core library.
 
-If you want to use python virtual environments, take a look at the [README_VENV](https://github.com/crownstone/CrownstoneUart-python-lib/blob/master/README_VENV.MD)
+If you want to use python virtual environments, take a look at the [README_VENV](README_VENV.MD)
 
-Pip is used for package management. You can install all dependencies by running:
-```
-python setup.py install
-
-# or
-
-python3 setup.py install
-```
-
-You can also install the package by pip
+You can install the package by pip
 ```python
 pip3 install crownstone-uart
 ```
+If you prefer the cutting edge (which may not always work!) or want to work on the library itself, use the setuptools.
+
+```
+python3 setup.py install
+```
+
 
 ## Requirements for the Crownstone USB
 
