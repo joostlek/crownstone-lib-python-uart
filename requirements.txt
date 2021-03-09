@@ -1,2 +1,2 @@
-crownstone-core>=1.0.0
-pyserial>=3.4.0
+crownstone-core~=1.0.0
+pyserial~=3.4.0
