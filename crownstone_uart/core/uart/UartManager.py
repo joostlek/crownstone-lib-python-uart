@@ -26,7 +26,7 @@ _LOGGER = logging.getLogger(__name__)
 class UartManager(threading.Thread):
 
     def __init__(self):
-        self.port = None
+        self.port = None     # Port configured by user.
         self.baudRate = 230400
         self.writeChunkMaxSize = 0
         self.running = True
@@ -108,11 +108,10 @@ class UartManager(threading.Thread):
                 # if it is not in the list of available ports
                 if not found_port:
                     # we will attempt it anyway
-                    _LOGGER.debug(F"Could not find provided port, attempt connection to index...{self._attemptingIndex} {self.baudRate}")
-                    self.setupConnection(self.port)
+                    _LOGGER.warning(F"Could not find provided port {self.port}")
                 else:
-                    _LOGGER.debug(F"Setup connection to...{self.port} {self.baudRate}")
-                    self._attemptConnection(self._attemptingIndex, False)
+                    _LOGGER.debug(F"Setup connection to {self.port}")
+                self.setupConnection(self.port)
                 continue
 
 
@@ -130,8 +129,8 @@ class UartManager(threading.Thread):
         self.setupConnection(attemptingPort.device, handshake)
 
 
-    def setupConnection(self, port, handshake=True):
-        _LOGGER.debug(F"Setting up connection...{port} {self.baudRate} {handshake}")
+    def setupConnection(self, port, performHandshake=True):
+        _LOGGER.debug(F"Setting up connection... port={port} baudRate={self.baudRate} performHandshake={performHandshake}")
         self._uartBridge = UartBridge(port, self.baudRate, self.writeChunkMaxSize)
         self._uartBridge.start()
 
@@ -141,7 +140,7 @@ class UartManager(threading.Thread):
 
         success = True
 
-        if handshake:
+        if performHandshake:
             collector = Collector(timeout=0.25, topic=UartTopics.hello)
             self.writeHello()
             reply = collector.receive_sync()
@@ -151,7 +150,10 @@ class UartManager(threading.Thread):
                 success = True
                 _LOGGER.debug("Handshake successful")
             else:
-                _LOGGER.debug("Handshake failed")
+                if self.port == port:
+                    _LOGGER.warning("Handshake failed: no reply from the crownstone.")
+                else:
+                    _LOGGER.debug("Handshake failed: no reply from the crownstone.")
 
         if not success:
             _LOGGER.debug("Reinitialization required")
