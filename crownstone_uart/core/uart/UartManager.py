@@ -111,7 +111,7 @@ class UartManager(threading.Thread):
                     _LOGGER.warning(F"Could not find provided port {self.port}")
                 else:
                     _LOGGER.debug(F"Setup connection to {self.port}")
-                self.setupConnection(self.port)
+                self.setupConnection(self.port, performHandshake=False)
                 continue
 
 
