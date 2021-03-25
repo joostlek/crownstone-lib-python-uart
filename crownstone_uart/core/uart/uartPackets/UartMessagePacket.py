@@ -15,7 +15,7 @@ class UartMessagePacket:
 	xB data
 	"""
 
-	def __init__(self, opCode: UartTxType = UartTxType.UNKNOWN, payload: list = None):
+	def __init__(self, opCode: UartTxType = UartTxType.UNKNOWN, payload: list or bytearray = None):
 		"""
 		:param opCode:       uint16 data type.
 		:param payload:      List of uint8, according to data type

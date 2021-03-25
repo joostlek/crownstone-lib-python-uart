@@ -247,16 +247,12 @@ class UartParser:
             id = Conversion.int8_to_uint8(messagePacket.payload)
             UartEventBus.emit(DevTopics.ownCrownstoneId, id)
 
-        # elif opCode == UartRxType.MAC_ADDRESS:
-        #     if len(messagePacket.payload) == 7:
-        #         # Bug in old firmware (2.1.4 and lower) sends an extra byte.
-        #         addr = Conversion.uint8_array_to_address(messagePacket.payload[0:-1])
-        #     else:
-        #         addr = Conversion.uint8_array_to_address(messagePacket.payload)
-        #     if addr is not "":
-        #         UartEventBus.emit(DevTopics.ownMacAddress, addr)
-        #     else:
-        #         print("invalid address:", messagePacket.payload)
+        elif opCode == UartRxType.MAC_ADDRESS:
+            addr = Conversion.uint8_array_to_address(messagePacket.payload)
+            if addr is not "":
+                UartEventBus.emit(DevTopics.ownMacAddress, addr)
+            else:
+                _LOGGER.warning("invalid address:", messagePacket.payload)
 
         elif opCode == UartRxType.ADC_CONFIG:
             # type is PowerCalculationsPacket

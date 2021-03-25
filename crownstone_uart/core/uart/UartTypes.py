@@ -38,6 +38,7 @@ class UartRxType(IntEnum):
 	SESSION_NONCE =                    1
 	HEARTBEAT =                        2
 	STATUS =                           3
+	MAC_ADDRESS =                      4
 	RESULT_PACKET =                    10
 
 	ERR_REPLY_PARSING_FAILED =         9900
