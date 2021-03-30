@@ -37,14 +37,18 @@ class UartManager(threading.Thread):
         self.ready = False
         self.eventId = UartEventBus.subscribe(SystemTopics.connectionClosed, self.resetEvent)
 
+        self.custom_port_set = False
+
         threading.Thread.__init__(self)
 
     def __del__(self):
         self.stop()
 
     def config(self, port, baudRate = 230400, writeChunkMaxSize=0):
-        self.port     = port
-        self.baudRate = baudRate
+        if port is not None:
+            self.custom_port_set = True
+        self.port            = port
+        self.baudRate        = baudRate
         self.writeChunkMaxSize = writeChunkMaxSize
 
     def run(self):
@@ -88,6 +92,12 @@ class UartManager(threading.Thread):
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def initialize(self):
+        if not self.custom_port_set:
+            _LOGGER.warning(F"By not providing a specific port to find the Crownstone dongle, we will try to connect and handshake with all available ports one by one until we find the dongle."
+                            F"\nPort that will be checked are:")
+            for port in self._availablePorts:
+                _LOGGER.warning(port.device)
+
         while self.running and not self.ready:
             self.ready = False
             _LOGGER.debug(F"Initializing... {self.port} {self.baudRate}")
@@ -117,7 +127,7 @@ class UartManager(threading.Thread):
 
             if self.port is None:
                 if self._attemptingIndex >= len(self._availablePorts): # this also catches len(self._availablePorts) == 0
-                    _LOGGER.debug("No Crownstone USB connected? Retrying...")
+                    _LOGGER.warning("No Crownstone USB connected? Retrying...")
                     time.sleep(1)
                     self.reset()
                 else:

@@ -1,4 +1,5 @@
 # import signal  # used to catch control C
+import logging
 import time
 
 from crownstone_core.protocol.BlePackets import ControlPacket
@@ -19,6 +20,7 @@ from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
+_LOGGER = logging.getLogger(__name__)
 
 class CrownstoneUart:
     __version__ = "2.0.0"
@@ -47,15 +49,17 @@ class CrownstoneUart:
         return self.uartManager.is_ready()
 
 
+
+
     async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         '''
-        writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-        For normal usage with Crownstones this is not required.
-        writeChunkMaxSize of 0 will not send the payload in chunks
-        :param port:
-        :param baudrate:
-        :param writeChunkMaxSize:
-        :return:
+            writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+            For normal usage with Crownstones this is not required.
+            writeChunkMaxSize of 0 will not send the payload in chunks
+            :param port:
+            :param baudrate:
+            :param writeChunkMaxSize:
+            :return:
         '''
         self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
@@ -74,14 +78,14 @@ class CrownstoneUart:
 
     def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         '''
-                writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-                For normal usage with Crownstones this is not required.
-                writeChunkMaxSize of 0 will not send the payload in chunks
-                :param port:
-                :param baudrate:
-                :param writeChunkMaxSize:
-                :return:
-                '''
+            writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+            For normal usage with Crownstones this is not required.
+            writeChunkMaxSize of 0 will not send the payload in chunks
+            :param port:
+            :param baudrate:
+            :param writeChunkMaxSize:
+            :return:
+        '''
         self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
         result = [False]
