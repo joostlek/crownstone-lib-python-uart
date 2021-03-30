@@ -249,7 +249,7 @@ class UartParser:
 
         elif opCode == UartRxType.MAC_ADDRESS:
             addr = Conversion.uint8_array_to_address(messagePacket.payload)
-            if addr is not "":
+            if addr != "":
                 UartEventBus.emit(DevTopics.ownMacAddress, addr)
             else:
                 _LOGGER.warning("invalid address:", messagePacket.payload)

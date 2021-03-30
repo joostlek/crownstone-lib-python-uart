@@ -6,6 +6,7 @@ from crownstone_core.protocol.BluenetTypes import ControlType
 
 from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
+from crownstone_uart.core.modules.StateHandler import StateHandler
 
 from crownstone_uart.core.dataFlowManagers.StoneManager import StoneManager
 from crownstone_uart.core.modules.UsbDevHandler import UsbDevHandler
@@ -34,6 +35,7 @@ class CrownstoneUart:
         
         self.stoneManager = StoneManager()
 
+        self.state = StateHandler()
         self.mesh = MeshHandler()
         # only for development. Generally undocumented.
         self._usbDev = UsbDevHandler()
