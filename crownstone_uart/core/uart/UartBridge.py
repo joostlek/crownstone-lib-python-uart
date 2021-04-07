@@ -108,6 +108,8 @@ class UartBridge(threading.Thread):
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"SerialException occurred during uart write", "error": e})
             except OSError as e:
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"OSError occurred during uart write.", "error": e})
+            except Exception as e:
+                UartEventBus.emit(SystemTopics.uartWriteError, {"message": "Unknown Exception during uart write.", "error": e})
             except:
                 e = sys.exc_info()[0]
                 UartEventBus.emit(SystemTopics.uartWriteError, {"message":"Unknown error during uart write.", "error": e})
