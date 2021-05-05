@@ -1,4 +1,5 @@
 import logging
+import queue
 import sys
 import threading
 
@@ -10,13 +11,14 @@ from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartParser import UartParser
 from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
 from crownstone_uart.topics.SystemTopics import SystemTopics
+from crownstone_uart.Exceptions import UartBridgeError, UartBridgeException
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class UartBridge(threading.Thread):
 
-    def __init__(self, port, baudrate, writeChunkMaxSize=0):
+    def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0):
         self.baudrate = baudrate
         self.port = port
         self.writeChunkMaxSize = writeChunkMaxSize
@@ -27,6 +29,8 @@ class UartBridge(threading.Thread):
         self.running = True
         self.parser = UartParser()
         self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
+        self.bridge_exception_queue: queue.Queue = exception_queue
+
         threading.Thread.__init__(self)
 
     def __del__(self):
@@ -34,8 +38,11 @@ class UartBridge(threading.Thread):
 
 
     def run(self):
-        self.start_serial()
-        self.start_reading()
+        try:
+            self.start_serial()
+            self.start_reading()
+        except UartBridgeException:
+            self.bridge_exception_queue.put(sys.exc_info())
 
 
     def stop(self):
@@ -53,8 +60,9 @@ class UartBridge(threading.Thread):
             self.serialController.timeout = UART_READ_TIMEOUT
             self.serialController._write_timeout = UART_WRITE_TIMEOUT
             self.serialController.open()
-        except OSError or serial.SerialException or KeyboardInterrupt:
+        except OSError or serial.SerialException or KeyboardInterrupt as serial_error:
             self.stop()
+            raise UartBridgeException(f"{UartBridgeError.CANNOT_OPEN_SERIAL_CONTROLLER} -> {serial_error}") from serial_error
 
 
     def start_reading(self):
