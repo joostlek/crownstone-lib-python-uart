@@ -15,7 +15,7 @@ class UartThreadExample(threading.Thread):
 
     def run(self):
         self.loop = asyncio.new_event_loop()
-        self.uart = CrownstoneUart(self.loop)
+        self.uart = CrownstoneUart()
         # choose either sync, or async operation
         self.loop.run_until_complete(self.runIt())
         # self.runIt_sync()

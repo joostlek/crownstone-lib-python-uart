@@ -30,7 +30,6 @@ class UartManager(threading.Thread):
         self.baudRate = 230400
         self.writeChunkMaxSize = 0
         self.running = True
-        self.loop = None
         self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
@@ -52,8 +51,6 @@ class UartManager(threading.Thread):
         self.writeChunkMaxSize = writeChunkMaxSize
 
     def run(self):
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
         self.initialize()
 
     def stop(self):

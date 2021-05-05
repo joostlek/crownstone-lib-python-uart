@@ -25,16 +25,11 @@ _LOGGER = logging.getLogger(__name__)
 class CrownstoneUart:
     __version__ = "2.0.0"
 
-    def __init__(self, loop=None):
+    def __init__(self):
         self.uartManager = None
         self.running = True
-        if loop is None:
-            self.loop = asyncio.get_event_loop()
-        else:
-            self.loop = loop
 
         self.uartManager = UartManager()
-        
         self.stoneManager = StoneManager()
 
         self.state = StateHandler()
