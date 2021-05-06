@@ -1,2 +1,2 @@
-crownstone-core~=2.1
+crownstone-core~=2.2
 pyserial~=3.4

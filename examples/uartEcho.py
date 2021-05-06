@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 """An example that switches a Crownstone, and prints the power usage of all Crownstones."""
-
 import time
 
 # Create new instance of uart

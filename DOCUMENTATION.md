@@ -57,7 +57,7 @@ The library can be designed synchronously (blocking) or asynchronously (asyncio)
 
 ### Async methods have to be awaited.
 
-### `initialize_usb_sync(self, port : str = None, baudrate : int = 230400)`
+### `initialize_usb_sync(port : str = None, baudrate : int = 230400)`
 > port: optional, COM port used by the serial communication. If None or not provided automatic connect will be performed.
 >
 > baudrate: optional, set baudrate. Do not use if you don't know what this does.
@@ -68,7 +68,7 @@ You can optionally specify a port, but if you don't it will automatically connec
 connect within a second.
 For Windows devices this is commonly `COM1`, for Linux based system `/dev/ttyUSB0` and for OSX `/dev/tty.SLAB_USBtoUART`. Addresses and number can vary from system to system.
 
-### `async initialize_usb(self, port = None, baudrate=230400):`
+### `async initialize_usb(port = None, baudrate=230400):`
 Set up the communication with the Crownstone USB using an async method.
 
 ### `switch_crownstone(crownstone_id: int, on: Boolean)`
@@ -143,7 +143,7 @@ By default, the iBeacon config at index 0 is active. It is set by the Crownstone
 This method will set the iBeacon UUID on this specific Crownstone via the mesh. 
 Returns a MeshResult class instance. Defined below.
 
-### `async set_ibeacon_major(self, crownstone_id: int, major: int, index: int = 0) -> MeshResult`
+### `async set_ibeacon_major(crownstone_id: int, major: int, index: int = 0) -> MeshResult`
 > crownstone_id: uid of the targeted Crownstone.
 >
 > major: int 0 - 65535
@@ -154,7 +154,7 @@ By default, the iBeacon config at index 0 is active. It is set by the Crownstone
 This method will set the iBeacon major on this specific Crownstone via the mesh. 
 Returns a MeshResult class instance. Defined below.
 
-### `async set_ibeacon_minor(self, crownstone_id: int, minor: int, index: int = 0) -> MeshResult`
+### `async set_ibeacon_minor(crownstone_id: int, minor: int, index: int = 0) -> MeshResult`
 > crownstone_id: uid of the targeted Crownstone.
 >
 > minor: int 0 - 65535
@@ -165,7 +165,7 @@ By default, the iBeacon config at index 0 is active. It is set by the Crownstone
 This method will set the iBeacon minor on this specific Crownstone via the mesh. 
 Returns a MeshResult class instance. Defined below.
 
-### `async periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0) -> MeshResult`
+### `async periodically_activate_ibeacon_index(crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0) -> MeshResult`
 > crownstone_uid_array: array of Crownstone uids to target
 >
 > index: 0 or 1
@@ -188,13 +188,50 @@ activeId = 0.............1...............0...............1...............0
 period_0 = |------------120s-------------|--------------120s-------------|
 ```
 
-### `async stop_ibeacon_interval_and_set_index(self, crownstone_uid_array: List[int], index) -> MeshResult`
+### `async stop_ibeacon_interval_and_set_index(crownstone_uid_array: List[int], index) -> MeshResult`
 > crownstone_uid_array: array of Crownstone uids to target
 >
 > index: 0 or 1
 
 If you have set an interval using the periodically_activate_ibeacon_index, this method will stop those intervals and
 the iBeacon config defined by index will be active for broadcasting after this method has completed.
+
+### Control Module
+This houses a number of control commands. More will be added when required.
+```python
+# initialization
+uart = CrownstoneUart()
+uart.initialize_usb_sync()
+
+# synchronous control methods
+uart.control.<method-name>
+
+# async control methods
+await uart.control.<method-name>
+```
+
+### `async def uploadFilter(filterId: int, metaData: FilterMetaData, filterData: [int])`
+You choose the filterId, you construct the FilterMetaData object and you finally provide a byteArray containing a valid filter.
+This function automatically chunks the filter if the total packet size goes over 256 bytes.
+Do not forget to commit your changes once you've uploaded or removed filters.
+Can raise a CrownstoneException when the return type is not SUCCESS.
+
+### `async def removeFilter(filterId)`
+Removes the provided filterId.
+Do not forget to commit your changes once you've uploaded or removed filters.
+Can raise a CrownstoneException when the return type is not SUCCESS.
+
+### `async def getFilterSummaries(self) -> FilterSummaries`
+This gets the filter summaries from the Crownstone. This is usually the first thing you do when you're working with filters.
+
+### `async def commitFilterChanges(masterVersion: int, masterCrc: int)`
+This actually applies the changes to the AssetFilter system on the Crownstone. You must provide the new master version and the masterCRC that should represent the filters on the Crownstones.
+There is an Util method available in the core lib to calculate the masterCRC based on your filters.
+
+
+
+
+
 
 ## EventBus API
 The CrownstoneUart python lib uses an event bus to deliver updates to you. 
@@ -255,3 +292,10 @@ This topic will print anything you send to the USB dongle using CrownstoneUart.u
      string:           stringified representation of the data
  }
 ```
+
+### `UartTopics.assetTrackingReport`
+This topic will give you a AssetMacReport class from the asset tracking system. This is only emitted if you've configured your Crownstone to do so.
+### `UartTopics.nearestCrownstoneTrackingUpdate`
+This topic will give you a NearestCrownstoneTrackingUpdate class from the asset localization system. This is only emitted if you've configured your Crownstone to do so.
+### `UartTopics.nearestCrownstoneTrackingTimeout`
+This topic will give you a NearestCrownstoneTrackingTimeout class from the asset localization system. This is only emitted if you've configured your Crownstone to do so.

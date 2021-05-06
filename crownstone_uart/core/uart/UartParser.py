@@ -7,6 +7,8 @@ from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
 from crownstone_core.util.Conversion import Conversion
 
+from crownstone_uart.core.uart.uartPackets.AssetMacReport import AssetMacReport
+from crownstone_uart.core.uart.uartPackets.NearestCrownstones import NearestCrownstoneTrackingUpdate, NearestCrownstoneTrackingTimeout
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
@@ -202,6 +204,29 @@ class UartParser:
             _LOGGER.debug(f"Received binary log array: {messagePacket.payload}")
             packet = UartLogArrayPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.logArray, packet)
+
+
+        #######################
+        # ASSET FILTER events #
+        #######################
+
+        elif opCode == UartRxType.ASSET_MAC_RSSI_REPORT:
+            _LOGGER.debug(f"Received ASSET_MAC_RSSI_REPORT: {messagePacket.payload}")
+            packet = AssetMacReport()
+            packet.fromData(messagePacket.payload)
+            UartEventBus.emit(UartTopics.assetTrackingReport, packet)
+
+        elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
+            _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_UPDATE: {messagePacket.payload}")
+            packet = NearestCrownstoneTrackingUpdate()
+            packet.fromData(messagePacket.payload)
+            UartEventBus.emit(UartTopics.nearestCrownstoneTrackingUpdate, packet)
+
+        elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_TIMEOUT:
+            _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_TIMEOUT: {messagePacket.payload}")
+            packet = NearestCrownstoneTrackingTimeout()
+            packet.fromData(messagePacket.payload)
+            UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
 
 
         ####################
