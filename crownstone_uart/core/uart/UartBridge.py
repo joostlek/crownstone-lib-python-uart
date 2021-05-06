@@ -1,5 +1,4 @@
 import logging
-import queue
 import sys
 import threading
 
@@ -19,6 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 class UartBridge(threading.Thread):
 
     def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0):
+        self.bridge_exception_queue = exception_queue
         self.baudrate = baudrate
         self.port = port
         self.writeChunkMaxSize = writeChunkMaxSize
@@ -29,7 +29,6 @@ class UartBridge(threading.Thread):
         self.running = True
         self.parser = UartParser()
         self.eventId = UartEventBus.subscribe(SystemTopics.uartWriteData, self.write_to_uart)
-        self.bridge_exception_queue: queue.Queue = exception_queue
 
         threading.Thread.__init__(self)
 
@@ -41,7 +40,7 @@ class UartBridge(threading.Thread):
         try:
             self.start_serial()
             self.start_reading()
-        except UartBridgeException:
+        except (UartBridgeException, BaseException):
             self.bridge_exception_queue.put(sys.exc_info())
 
 

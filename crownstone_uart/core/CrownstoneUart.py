@@ -48,14 +48,14 @@ class CrownstoneUart:
 
 
 
-    async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0) -> bool:
+    async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         """
         Initialize a Crownstone serial device. 
             
         :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
         :param baudrate: baudrate that should be used for this connection. default is 230400.
         :param writeChunkMaxSize: writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-        For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
+            For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
         
         This method is a coroutine.
         """
@@ -71,14 +71,13 @@ class CrownstoneUart:
         while not result[0] and self.running:
             try:
                 exc = self.manager_exception_queue.get(block=False)
-            except queue.Empty:
-                pass
-            else:
+                # log error & wait for thread to close
                 _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
-                # wait for thread to close
                 self.uartManager.join()
                 self.stop()
                 break
+            except queue.Empty:
+                pass 
                     
             await asyncio.sleep(0.1)
 
@@ -92,7 +91,7 @@ class CrownstoneUart:
         :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
         :param baudrate: baudrate that should be used for this connection. default is 230400.
         :param writeChunkMaxSize: writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-        For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
+            For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
         """
         self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
@@ -108,16 +107,16 @@ class CrownstoneUart:
             while not result[0] and self.running:
                 try:
                     exc = self.manager_exception_queue.get(block=False)
-                except queue.Empty:
-                    pass
-                else:
-                    _LOGGER.warning(f"Error occurred while initializing USB: {exc[1]}, quitting.")
-                    # wait for thread to close
+                    # log error & wait for thread to close
+                    _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
                     self.uartManager.join()
                     self.stop()
                     break
+                except queue.Empty:
+                    pass
                     
                 time.sleep(0.1)
+                
         except KeyboardInterrupt:
             print("\nClosing Crownstone Uart.... Thanks for your time!")
             self.stop()

@@ -32,12 +32,13 @@ class UartManager(threading.Thread):
         self.port = None     # Port configured by user.
         self.baudRate = 230400
         self.writeChunkMaxSize = 0
+        self.manager_exception_queue = exception_queue
         self.running = True
         self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
         self.ready = False
-        self.manager_exception_queue: queue.Queue = exception_queue
+
         self.eventId = UartEventBus.subscribe(SystemTopics.connectionClosed, self.resetEvent)
 
         self.custom_port_set = False
@@ -57,7 +58,7 @@ class UartManager(threading.Thread):
     def run(self):
         try:
             self.initialize()
-        except UartManagerException:
+        except (UartManagerException, BaseException):
             self.manager_exception_queue.put(sys.exc_info())
 
     def stop(self):
@@ -148,19 +149,17 @@ class UartManager(threading.Thread):
         self._uartBridge = UartBridge(bridge_exception_queue, port, self.baudRate, self.writeChunkMaxSize)
         self._uartBridge.start()
 
-        def initialize_bridge() -> bool:
-            """Initialize the Uart Bridge."""
+        def initialize_bridge():
             # handle exceptions that happen in thread while initializing
             while not self._uartBridge.started and self.running:
                 try:
                     exc = bridge_exception_queue.get(block=False)
-                except queue.Empty:
-                    pass
-                else:
+                    # log error & wait for thread to close
                     _LOGGER.error(exc[1])
-                    # wait for thread to close
                     self._uartBridge.join()
                     return False
+                except queue.Empty:
+                    pass
                     
                 time.sleep(0.1)
 
