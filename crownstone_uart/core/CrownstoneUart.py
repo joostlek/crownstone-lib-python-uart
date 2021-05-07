@@ -1,5 +1,6 @@
 # import signal  # used to catch control C
 import logging
+import queue
 import time
 
 from crownstone_core.protocol.BlePackets import ControlPacket
@@ -29,8 +30,9 @@ class CrownstoneUart:
     def __init__(self):
         self.uartManager = None
         self.running = True
-
-        self.uartManager = UartManager()
+        
+        self.manager_exception_queue = queue.Queue()
+        self.uartManager = UartManager(self.manager_exception_queue)
         self.stoneManager = StoneManager()
 
         self.control = ControlHandler()
@@ -49,15 +51,16 @@ class CrownstoneUart:
 
 
     async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
-        '''
-            writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-            For normal usage with Crownstones this is not required.
-            writeChunkMaxSize of 0 will not send the payload in chunks
-            :param port:
-            :param baudrate:
-            :param writeChunkMaxSize:
-            :return:
-        '''
+        """
+        Initialize a Crownstone serial device. 
+            
+        :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
+        :param baudrate: baudrate that should be used for this connection. default is 230400.
+        :param writeChunkMaxSize: writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+            For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
+        
+        This method is a coroutine.
+        """
         self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
         result = [False]
@@ -68,21 +71,30 @@ class CrownstoneUart:
         self.uartManager.start()
 
         while not result[0] and self.running:
+            try:
+                exc = self.manager_exception_queue.get(block=False)
+                # log error & wait for thread to close
+                _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
+                self.uartManager.join()
+                self.stop()
+                break
+            except queue.Empty:
+                pass 
+                    
             await asyncio.sleep(0.1)
 
         UartEventBus.unsubscribe(event)
         
 
     def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
-        '''
-            writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
-            For normal usage with Crownstones this is not required.
-            writeChunkMaxSize of 0 will not send the payload in chunks
-            :param port:
-            :param baudrate:
-            :param writeChunkMaxSize:
-            :return:
-        '''
+        """
+        Initialize a Crownstone serial device. 
+            
+        :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
+        :param baudrate: baudrate that should be used for this connection. default is 230400.
+        :param writeChunkMaxSize: writing in chunks solves issues writing to certain JLink chips. A max chunkSize of 64 was found to work well for our case.
+            For normal usage with Crownstones this is not required. a writeChunkMaxSize of 0 will not send the payload in chunks.
+        """
         self.uartManager.config(port, baudrate, writeChunkMaxSize)
 
         result = [False]
@@ -95,7 +107,18 @@ class CrownstoneUart:
 
         try:
             while not result[0] and self.running:
+                try:
+                    exc = self.manager_exception_queue.get(block=False)
+                    # log error & wait for thread to close
+                    _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
+                    self.uartManager.join()
+                    self.stop()
+                    break
+                except queue.Empty:
+                    pass
+                    
                 time.sleep(0.1)
+                
         except KeyboardInterrupt:
             print("\nClosing Crownstone Uart.... Thanks for your time!")
             self.stop()

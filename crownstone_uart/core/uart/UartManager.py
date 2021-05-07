@@ -1,7 +1,8 @@
-import asyncio
 import logging
 import threading
 import time
+import sys
+import queue
 
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
@@ -19,21 +20,25 @@ from crownstone_uart.core.uart.UartBridge import UartBridge
 from crownstone_uart.topics.UartTopics import UartTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
+from crownstone_uart.Exceptions import UartManagerError, UartManagerException
+
 from serial.tools import list_ports
 
 _LOGGER = logging.getLogger(__name__)
 
 class UartManager(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, exception_queue):
         self.port = None     # Port configured by user.
         self.baudRate = 230400
         self.writeChunkMaxSize = 0
+        self.manager_exception_queue = exception_queue
         self.running = True
         self._availablePorts = list(list_ports.comports())
         self._attemptingIndex = 0
         self._uartBridge = None
         self.ready = False
+
         self.eventId = UartEventBus.subscribe(SystemTopics.connectionClosed, self.resetEvent)
 
         self.custom_port_set = False
@@ -51,7 +56,10 @@ class UartManager(threading.Thread):
         self.writeChunkMaxSize = writeChunkMaxSize
 
     def run(self):
-        self.initialize()
+        try:
+            self.initialize()
+        except (UartManagerException, BaseException):
+            self.manager_exception_queue.put(sys.exc_info())
 
     def stop(self):
         self.running = False
@@ -91,9 +99,8 @@ class UartManager(threading.Thread):
     def initialize(self):
         if not self.custom_port_set:
             _LOGGER.warning(F"By not providing a specific port to find the Crownstone dongle, we will try to connect and handshake with all available ports one by one until we find the dongle."
-                            F"\nPort that will be checked are:")
-            for port in self._availablePorts:
-                _LOGGER.warning(port.device)
+                            F"\nPorts that will be checked are:"
+                            F"\n{[port.device for port in self._availablePorts]}")
 
         while self.running and not self.ready:
             self.ready = False
@@ -138,23 +145,41 @@ class UartManager(threading.Thread):
 
     def setupConnection(self, port, performHandshake=True):
         _LOGGER.debug(F"Setting up connection... port={port} baudRate={self.baudRate} performHandshake={performHandshake}")
-        self._uartBridge = UartBridge(port, self.baudRate, self.writeChunkMaxSize)
+        bridge_exception_queue = queue.Queue()
+        self._uartBridge = UartBridge(bridge_exception_queue, port, self.baudRate, self.writeChunkMaxSize)
         self._uartBridge.start()
 
-        # wait for the bridge to initialize
-        while not self._uartBridge.started and self.running:
-            time.sleep(0.1)
+        def initialize_bridge():
+            # handle exceptions that happen in thread while initializing
+            while not self._uartBridge.started and self.running:
+                try:
+                    exc = bridge_exception_queue.get(block=False)
+                    # log error & wait for thread to close
+                    _LOGGER.error(exc[1])
+                    self._uartBridge.join()
+                    return False
+                except queue.Empty:
+                    pass
+                    
+                time.sleep(0.1)
 
-        success = True
+            return True
+        
+        # attempt serial connection with the dongle
+        if not initialize_bridge():
+            raise UartManagerException(UartManagerError.UART_BRIDGE_ERROR)
+
+        # this is true by default if no handshake is required
+        handshake_succesfull = True
 
         if performHandshake:
             collector = Collector(timeout=0.25, topic=UartTopics.hello)
             self.writeHello()
             reply = collector.receive_sync()
 
-            success = False
+            handshake_succesfull = False
             if isinstance(reply, UartCrownstoneHelloPacket):
-                success = True
+                handshake_succesfull = True
                 _LOGGER.debug("Handshake successful")
             else:
                 if self.port == port:
@@ -162,12 +187,15 @@ class UartManager(threading.Thread):
                 else:
                     _LOGGER.debug("Handshake failed: no reply from the crownstone.")
 
-        if not success:
+        if not handshake_succesfull:
             _LOGGER.debug("Reinitialization required")
             self._attemptingIndex += 1
             self._uartBridge.stop()
-            while self._uartBridge.started and self.running:
-                time.sleep(0.1)
+
+            # initialize bridge again and check for errors
+            if not initialize_bridge():
+                raise UartManagerException(UartManagerError.UART_BRIDGE_ERROR)
+
         else:
             _LOGGER.info("Connection established to {}".format(port))
             self.port = port
