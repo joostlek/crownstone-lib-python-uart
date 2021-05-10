@@ -7,6 +7,11 @@ from crownstone_core.util.FilterUtil import FilterChunker
 
 from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.protocol.BluenetTypes import ResultValue
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
+
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 
 from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.UartEventBus import UartEventBus
@@ -40,7 +45,10 @@ class ControlHandler:
         return self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 
 
-    async def _write(self, uartPacket: [int]) -> [int] or None:
+    async def _write(self, controlPacket: [int]) -> [int] or None:
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+
         resultCollector = Collector(timeout=1, topic=SystemTopics.resultPacket)
         # send the message to the Crownstone
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
