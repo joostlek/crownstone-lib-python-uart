@@ -19,13 +19,15 @@ class ControlHandler:
 
     async def uploadFilter(self, filterId: int, filter: AssetFilter):
         chunker = FilterChunker(filterId, filter.getPacket())
+        result = None
         for i in range(0, chunker.getAmountOfChunks()):
             chunk = chunker.getChunk()
-            await self._write(ControlPacketsGenerator.getUploadFilterPacket(chunk))
+            result = await self._write(ControlPacketsGenerator.getUploadFilterPacket(chunk))
+        return result
 
 
     async def removeFilter(self, filterId):
-        await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
+        return await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
 
 
     async def getFilterSummaries(self) -> GetFilterSummariesReturnPacket:
@@ -38,10 +40,15 @@ class ControlHandler:
 
 
     async def commitFilterChanges(self, masterVersion: int, masterCrc: int):
-        await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
+        return await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 
 
     async def _write(self, controlPacket: [int]) -> [int] or None:
+        """
+        Returns the result payload.
+        TODO: return result packet.
+        TODO: use a ControlPacket as param, instead of int array.
+        """
         _LOGGER.debug(f"Write control packet {controlPacket}")
         uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
