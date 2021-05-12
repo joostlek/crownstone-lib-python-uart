@@ -1,51 +1,48 @@
 import asyncio
-
-from crownstone_core.packets.assetFilters.FilterMetaDataPackets import FilterMetaData
-from crownstone_core.packets.assetFilters.FilterPackets import FilterSummaries
-from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
-from crownstone_core.util.FilterUtil import FilterChunker
-
+import logging
 from crownstone_core.Exceptions import CrownstoneException
+from crownstone_core.packets.assetFilter.AssetFilterCommands import GetFilterSummariesReturnPacket
+from crownstone_core.packets.assetFilter.FilterMetaDataPackets import AssetFilter
 from crownstone_core.protocol.BluenetTypes import ResultValue
-from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
-
-from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
-
-from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
-
-from crownstone_uart.core.dataFlowManagers.Collector import Collector
+from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
+from crownstone_core.util.AssetFilterUtil import FilterChunker
 from crownstone_uart.core.UartEventBus import UartEventBus
+from crownstone_uart.core.dataFlowManagers.Collector import Collector
+from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
+from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
+from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
+_LOGGER = logging.getLogger(__name__)
 
 class ControlHandler:
 
-    async def uploadFilter(self, filterId: int, metaData: FilterMetaData, filterData: [int]):
-        fullData = metaData.getPacket() + filterData
-        chunker = FilterChunker(filterId, fullData)
-        for i in range(0,chunker.getAmountOfChunks()):
+    async def uploadFilter(self, filterId: int, filter: AssetFilter):
+        chunker = FilterChunker(filterId, filter.getPacket())
+        for i in range(0, chunker.getAmountOfChunks()):
             chunk = chunker.getChunk()
             await self._write(ControlPacketsGenerator.getUploadFilterPacket(chunk))
 
 
     async def removeFilter(self, filterId):
-        return self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
+        await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
 
 
-    async def getFilterSummaries(self) -> FilterSummaries:
+    async def getFilterSummaries(self) -> GetFilterSummariesReturnPacket:
         result = await self._write(ControlPacketsGenerator.getGetFilterSummariesPacket())
         if result is None:
             raise CrownstoneException(401, "No summaries received")
-        summaries = FilterSummaries()
+        summaries = GetFilterSummariesReturnPacket()
         summaries.fromData(result)
         return summaries
 
 
     async def commitFilterChanges(self, masterVersion: int, masterCrc: int):
-        return self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
+        await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 
 
     async def _write(self, controlPacket: [int]) -> [int] or None:
+        _LOGGER.debug(f"Write control packet {controlPacket}")
         uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
 
