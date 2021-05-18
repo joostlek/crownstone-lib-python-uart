@@ -213,7 +213,7 @@ class UartParser:
         elif opCode == UartRxType.ASSET_MAC_RSSI_REPORT:
             _LOGGER.debug(f"Received ASSET_MAC_RSSI_REPORT: {messagePacket.payload}")
             packet = AssetMacReport()
-            packet.fromData(messagePacket.payload)
+            packet.setPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.assetTrackingReport, packet)
 
         elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
