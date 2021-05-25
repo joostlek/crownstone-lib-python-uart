@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 class ControlHandler:
 
     async def uploadFilter(self, filterId: int, filter: AssetFilter):
-        chunker = FilterChunker(filterId, filter.getPacket())
+        chunker = FilterChunker(filterId, filter.getPacket(), 128)
         result = None
         for i in range(0, chunker.getAmountOfChunks()):
             chunk = chunker.getChunk()
