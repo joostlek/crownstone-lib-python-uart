@@ -79,6 +79,11 @@ class MeshHandler:
         no_op_packet = ControlPacket(ControlType.NO_OPERATION)
         await self._command_via_mesh_broadcast(no_op_packet.getPacket())
 
+    async def set_tx_power(self, crownstone_uid_array: List[int], txPower: int):
+        statePacket = ControlStateSetPacket(StateType.TX_POWER)
+        statePacket.loadInt8(txPower)
+        return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, statePacket.getPacket())
+
     async def set_ibeacon_uuid(self, crownstone_id: int, uuid: str, index: int = 0) -> MeshResult:
         """
         :param crownstone_id: int crownstoneUid, 1-255
