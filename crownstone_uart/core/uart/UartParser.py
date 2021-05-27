@@ -327,7 +327,7 @@ class UartParser:
             pass
 
         else:
-            _LOGGER.warning(f"Unknown opCode: {opCode}")
+            _LOGGER.debug(f"Unknown opCode: {opCode}")
 
         parsedData = None
         
