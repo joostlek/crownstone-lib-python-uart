@@ -26,7 +26,11 @@ class UartManagerError(Enum):
 
 class UartBridgeException(Exception):
     """Raised on errors in the Uart Bridge."""
-    
+
 
 class UartManagerException(Exception):
     """Raised on errors in the Uart Manager."""
+
+
+class UartException(Exception):
+    """Raised on errors while initializing USB."""

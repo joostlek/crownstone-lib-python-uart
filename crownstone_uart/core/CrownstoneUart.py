@@ -21,6 +21,8 @@ from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
+from crownstone_uart.Exceptions import UartException
+
 _LOGGER = logging.getLogger(__name__)
 
 class CrownstoneUart:
@@ -29,7 +31,7 @@ class CrownstoneUart:
     def __init__(self):
         self.uartManager = None
         self.running = True
-        
+
         self.manager_exception_queue = queue.Queue()
         self.uartManager = UartManager(self.manager_exception_queue)
         self.stoneManager = StoneManager()
@@ -71,18 +73,16 @@ class CrownstoneUart:
         while not result[0] and self.running:
             try:
                 exc = self.manager_exception_queue.get(block=False)
-                # log error & wait for thread to close
-                _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
                 self.uartManager.join()
                 self.stop()
-                break
+                raise UartException(exc)
             except queue.Empty:
-                pass 
-                    
+                pass
+
             await asyncio.sleep(0.1)
 
         UartEventBus.unsubscribe(event)
-        
+
 
     def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         """
@@ -107,16 +107,14 @@ class CrownstoneUart:
             while not result[0] and self.running:
                 try:
                     exc = self.manager_exception_queue.get(block=False)
-                    # log error & wait for thread to close
-                    _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
                     self.uartManager.join()
                     self.stop()
-                    break
+                    raise UartException(exc)
                 except queue.Empty:
                     pass
-                    
+
                 time.sleep(0.1)
-                
+
         except KeyboardInterrupt:
             print("\nClosing Crownstone Uart.... Thanks for your time!")
             self.stop()
