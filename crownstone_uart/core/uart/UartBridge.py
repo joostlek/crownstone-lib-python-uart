@@ -10,7 +10,7 @@ from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartParser import UartParser
 from crownstone_uart.core.uart.UartReadBuffer import UartReadBuffer
 from crownstone_uart.topics.SystemTopics import SystemTopics
-from crownstone_uart.Exceptions import UartBridgeError, UartBridgeException
+from crownstone_uart.Exceptions import UartBridgeError, UartException
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class UartBridge(threading.Thread):
         try:
             self.start_serial()
             self.start_reading()
-        except (UartBridgeException, BaseException):
+        except (UartException, BaseException):
             self.bridge_exception_queue.put(sys.exc_info())
 
 
@@ -61,7 +61,8 @@ class UartBridge(threading.Thread):
             self.serialController.open()
         except OSError or serial.SerialException or KeyboardInterrupt as serial_error:
             self.stop()
-            raise UartBridgeException(f"{UartBridgeError.CANNOT_OPEN_SERIAL_CONTROLLER} -> {serial_error}") from serial_error
+            _LOGGER.error(serial_error)
+            raise UartException(UartBridgeError.CANNOT_OPEN_SERIAL_CONTROLLER, serial_error) from serial_error
 
 
     def start_reading(self):

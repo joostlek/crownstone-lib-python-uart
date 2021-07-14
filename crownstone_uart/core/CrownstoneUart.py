@@ -21,8 +21,6 @@ from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
-from crownstone_uart.Exceptions import UartException
-
 _LOGGER = logging.getLogger(__name__)
 
 class CrownstoneUart:
@@ -75,7 +73,7 @@ class CrownstoneUart:
                 exc = self.manager_exception_queue.get(block=False)
                 self.uartManager.join()
                 self.stop()
-                raise UartException(exc)
+                raise exc[0](exc[1])
             except queue.Empty:
                 pass
 
@@ -109,7 +107,7 @@ class CrownstoneUart:
                     exc = self.manager_exception_queue.get(block=False)
                     self.uartManager.join()
                     self.stop()
-                    raise UartException(exc)
+                    raise exc[0](exc[1])
                 except queue.Empty:
                     pass
 

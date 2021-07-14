@@ -20,7 +20,7 @@ from crownstone_uart.core.uart.UartBridge import UartBridge
 from crownstone_uart.topics.UartTopics import UartTopics
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
-from crownstone_uart.Exceptions import UartManagerError, UartManagerException
+from crownstone_uart.Exceptions import UartException
 
 from serial.tools import list_ports
 
@@ -58,7 +58,7 @@ class UartManager(threading.Thread):
     def run(self):
         try:
             self.initialize()
-        except (UartManagerException, BaseException):
+        except (UartException, BaseException):
             self.manager_exception_queue.put(sys.exc_info())
 
     def stop(self):
@@ -154,20 +154,15 @@ class UartManager(threading.Thread):
             while not self._uartBridge.started and self.running:
                 try:
                     exc = bridge_exception_queue.get(block=False)
-                    # log error & wait for thread to close
-                    _LOGGER.error(exc[1])
                     self._uartBridge.join()
-                    return False
+                    raise exc[0](exc[1])
                 except queue.Empty:
                     pass
                     
                 time.sleep(0.1)
-
-            return True
         
         # attempt serial connection with the dongle
-        if not initialize_bridge():
-            raise UartManagerException(UartManagerError.UART_BRIDGE_ERROR)
+        initialize_bridge()
 
         # this is true by default if no handshake is required
         handshake_succesfull = True
@@ -192,9 +187,7 @@ class UartManager(threading.Thread):
             self._attemptingIndex += 1
             self._uartBridge.stop()
 
-            # initialize bridge again and check for errors
-            if not initialize_bridge():
-                raise UartManagerException(UartManagerError.UART_BRIDGE_ERROR)
+            initialize_bridge()
 
         else:
             _LOGGER.info("Connection established to {}".format(port))
