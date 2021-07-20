@@ -43,7 +43,7 @@ class ControlHandler:
         return await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 
 
-    async def _write(self, controlPacket: [int]) -> [int] or None:
+    async def _write(self, controlPacket: [int], successCodes = [ResultValue.SUCCESS, ResultValue.SUCCESS_NO_CHANGE, ResultValue.WAIT_FOR_SUCCESS]) -> [int] or None:
         """
         Returns the result payload.
         TODO: return result packet.
@@ -61,7 +61,7 @@ class ControlHandler:
         commandResultData = await resultCollector.receive()
 
         if commandResultData is not None:
-            if commandResultData.resultCode is not ResultValue.SUCCESS:
-                raise CrownstoneException(commandResultData.resultCode, "Command has failed.")
+            if commandResultData.resultCode not in successCodes:
+                raise CrownstoneException(commandResultData.resultCode, f"Command has failed: result code is {commandResultData.resultCode}")
             return commandResultData.payload
         return None

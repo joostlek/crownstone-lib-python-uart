@@ -76,8 +76,19 @@ class MeshHandler:
 
 
     async def send_no_op(self):
-        no_op_packet = ControlPacket(ControlType.NO_OPERATION)
-        await self._command_via_mesh_broadcast(no_op_packet.getPacket())
+        control_packet = ControlPacket(ControlType.NO_OPERATION)
+        await self._command_via_mesh_broadcast(control_packet.getPacket())
+
+    async def reset_rssi_between_stones(self, crownstone_uid_array: List[int] = None):
+        control_packet = ControlPacket(ControlType.RESET_RSSI_BETWEEN_STONES)
+        if (crownstone_uid_array == None):
+            return await self._command_via_mesh_broadcast(control_packet.getPacket())
+        else:
+            return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, control_packet.getPacket())
+
+    async def reset_errors(self):
+        control_packet = ControlPacketsGenerator.getResetErrorPacket(0xFFFFFFFF)
+        await self._command_via_mesh_broadcast(control_packet)
 
     async def set_tx_power(self, crownstone_uid_array: List[int], txPower: int):
         statePacket = ControlStateSetPacket(StateType.TX_POWER)
