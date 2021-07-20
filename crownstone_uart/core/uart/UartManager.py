@@ -153,9 +153,9 @@ class UartManager(threading.Thread):
             # handle exceptions that happen in thread while initializing
             while not self._uartBridge.started and self.running:
                 try:
-                    exc = bridge_exception_queue.get(block=False)
+                    exception, exception_value, trace = bridge_exception_queue.get(block=False)
                     self._uartBridge.join()
-                    raise exc[0](exc[1])
+                    raise exception(exception_value)
                 except queue.Empty:
                     pass
                     

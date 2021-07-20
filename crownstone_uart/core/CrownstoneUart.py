@@ -70,10 +70,10 @@ class CrownstoneUart:
 
         while not result[0] and self.running:
             try:
-                exc = self.manager_exception_queue.get(block=False)
+                exception, exception_value, trace = self.manager_exception_queue.get(block=False)
                 self.uartManager.join()
                 self.stop()
-                raise exc[0](exc[1])
+                raise exception(exception_value)
             except queue.Empty:
                 pass
 
