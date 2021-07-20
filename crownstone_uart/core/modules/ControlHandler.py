@@ -35,7 +35,7 @@ class ControlHandler:
         if result is None:
             raise CrownstoneException(401, "No summaries received")
         summaries = GetFilterSummariesReturnPacket()
-        summaries.fromData(result)
+        summaries.setPacket(result)
         return summaries
 
 
