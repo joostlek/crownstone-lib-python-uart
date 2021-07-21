@@ -30,7 +30,7 @@ class CrownstoneUart:
     def __init__(self):
         self.uartManager = None
         self.running = True
-        
+
         self.manager_exception_queue = queue.Queue()
         self.uartManager = UartManager(self.manager_exception_queue)
         self.stoneManager = StoneManager()
@@ -72,19 +72,17 @@ class CrownstoneUart:
 
         while not result[0] and self.running:
             try:
-                exc = self.manager_exception_queue.get(block=False)
-                # log error & wait for thread to close
-                _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
+                exception, exception_value, trace = self.manager_exception_queue.get(block=False)
                 self.uartManager.join()
                 self.stop()
-                break
+                raise exception(exception_value)
             except queue.Empty:
-                pass 
-                    
+                pass
+
             await asyncio.sleep(0.1)
 
         UartEventBus.unsubscribe(event)
-        
+
 
     def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         """
@@ -109,16 +107,14 @@ class CrownstoneUart:
             while not result[0] and self.running:
                 try:
                     exc = self.manager_exception_queue.get(block=False)
-                    # log error & wait for thread to close
-                    _LOGGER.warning(f"Error occurred while initializing USB: {exc}, quitting.")
                     self.uartManager.join()
                     self.stop()
-                    break
+                    raise exc[0](exc[1])
                 except queue.Empty:
                     pass
-                    
+
                 time.sleep(0.1)
-                
+
         except KeyboardInterrupt:
             print("\nClosing Crownstone Uart.... Thanks for your time!")
             self.stop()
