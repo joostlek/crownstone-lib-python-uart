@@ -1,6 +1,6 @@
 import logging
 
-from crownstone_core.packets.BasePacket import BasePacket
+from crownstone_core.packets.util.BasePacket import BasePacket
 from crownstone_core.util.BufferReader import BufferReader
 
 _LOGGER = logging.getLogger(__name__)
