@@ -15,18 +15,5 @@ class UartBridgeError(Enum):
         return self.value
 
 
-class UartManagerError(Enum):
-    """Error types for Uart Manager exceptions."""
-    UART_BRIDGE_ERROR                   = "UART_BRIDGE_ERROR"
-
-    def __str__(self) -> str:
-        """Return value of the error."""
-        return self.value
-
-
-class UartBridgeException(Exception):
-    """Raised on errors in the Uart Bridge."""
-    
-
-class UartManagerException(Exception):
+class UartException(Exception):
     """Raised on errors in the Uart Manager."""
