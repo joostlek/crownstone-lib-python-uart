@@ -1,10 +1,28 @@
-from crownstone_core.util.BasePackets import *
+from crownstone_core import Conversion
+from crownstone_core.packets.BasePacket import BasePacket
+from crownstone_core.util.BufferReader import BufferReader
 
 
-class AssetMacReport(PacketBase):
+class AssetMacReport(BasePacket):
 
-    def __init__(self):
-        self.macAddress   = PacketBaseList(cls=Uint8,len=6)
-        self.crownstoneId = Uint8()
-        self.rssi         = Int8()
-        self.channel      = Uint8()
+    def __init__(self, data=None):
+        self.assetMacAddress: str = ""
+        self.crownstoneId: int    = 0
+        self.rssi: int            = 0
+        self.channel: int         = 0
+
+        if data is not None:
+            self.parse(data)
+
+    def _parse(self, reader: BufferReader):
+        self.assetMacAddress = Conversion.uint8_array_to_address(bytearray(reader.getBytes(6)))
+        self.crownstoneId    = reader.getUInt8()
+        self.rssi            = reader.getInt8()
+        self.channel         = reader.getUInt8()
+
+    def __str__(self):
+        return f"AssetMacReport(" \
+               f"assetMacAddress={self.assetMacAddress} " \
+               f"crownstoneId={self.crownstoneId} " \
+               f"rssi={self.rssi} " \
+               f"channel={self.channel})"
