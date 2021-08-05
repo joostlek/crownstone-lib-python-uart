@@ -3,7 +3,7 @@ import logging
 from typing import List
 
 from crownstone_core.Exceptions import CrownstoneException, CrownstoneError
-from crownstone_core.packets.assetFilter.CommandPackets import FilterSummaryPacket, FilterSummariesPacket
+from crownstone_core.packets.assetFilter.FilterCommandPackets import FilterSummaryPacket, FilterSummariesPacket
 from crownstone_core.packets.assetFilter.builders.AssetFilter import AssetFilter
 from crownstone_core.packets.assetFilter.util import AssetFilterMasterCrc
 from crownstone_core.packets.assetFilter.util.AssetFilterChunker import FilterChunker
@@ -32,11 +32,11 @@ class ControlHandler:
 
         :return:   The filter summaries packet.
         """
+        _LOGGER.info(f"getFilterSummaries")
         result = await self._write(ControlPacketsGenerator.getGetFilterSummariesPacket())
         if result is None:
             raise CrownstoneException(CrownstoneError.DATA_MISSING, "No summaries received")
-        summaries = FilterSummariesPacket()
-        summaries.parse(result)
+        summaries = FilterSummariesPacket(result)
         return summaries
 
     async def uploadFilter(self, filter: AssetFilter):
@@ -46,6 +46,7 @@ class ControlHandler:
 
         :param filter:  The asset filter to be uploaded.
         """
+        _LOGGER.info(f"uploadFilter {filter}")
         chunker = FilterChunker(filter, 128)
         result = None
         for i in range(0, chunker.getAmountOfChunks()):
@@ -60,6 +61,7 @@ class ControlHandler:
 
         :param filterId:     The filter ID to be removed.
         """
+        _LOGGER.info(f"removeFilter id={filterId}")
         return await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
 
     async def commitFilterChanges(self, masterVersion: int, filters: List[AssetFilter], filterSummaries: List[FilterSummaryPacket] = None):
@@ -70,6 +72,7 @@ class ControlHandler:
         :param filters:           A list of asset filters with filter ID, that are uploaded to the Crowstone.
         :param filterSummaries :  A list of filter summaries that are already on the Crownstone.
         """
+        _LOGGER.info(f"commitFilterChanges masterVersion={masterVersion}")
         masterCrc = AssetFilterMasterCrc.get_master_crc_from_filters(filters, filterSummaries)
         return await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 
