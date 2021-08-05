@@ -7,6 +7,7 @@ from crownstone_core.packets.assetFilter.FilterCommandPackets import FilterSumma
 from crownstone_core.packets.assetFilter.builders.AssetFilter import AssetFilter
 from crownstone_core.packets.assetFilter.util import AssetFilterMasterCrc
 from crownstone_core.packets.assetFilter.util.AssetFilterChunker import FilterChunker
+from crownstone_core.packets.assetFilter.util.AssetFilterSyncer import AssetFilterSyncer
 
 from crownstone_core.protocol.BluenetTypes import ResultValue
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
@@ -20,6 +21,30 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 _LOGGER = logging.getLogger(__name__)
 
 class ControlHandler:
+
+    async def setFilters(self, filters: List[AssetFilter], masterVersion: int = None) -> int:
+        """
+        Makes sure the given filters are set at the Crownstone.
+        Uploads and removes filters where necessary.
+        :param filters:           The asset filter to be uploaded.
+        :param masterVersion:     The new master version. If None, the master version will be increased by 1.
+        :return:                  The new master version.
+        """
+        _LOGGER.info(f"setFilters")
+        summaries = await self.getFilterSummaries()
+        syncer = AssetFilterSyncer(summaries, filters, masterVersion)
+        if not syncer.commitRequired:
+            return syncer.masterVersion
+
+        for filterId in syncer.removeIds:
+            await self.removeFilter(filterId)
+
+        for filter in filters:
+            if filter.getFilterId() in syncer.uploadIds:
+                await self.uploadFilter(filter)
+
+        await self.commitFilterChanges(syncer.masterVersion, filters)
+        return syncer.masterVersion
 
     async def getFilterSummaries(self) -> FilterSummariesPacket:
         """
