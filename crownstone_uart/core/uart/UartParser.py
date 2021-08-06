@@ -8,6 +8,7 @@ from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
 from crownstone_core.util.Conversion import Conversion
 
 from crownstone_uart.core.uart.uartPackets.AssetMacReport import AssetMacReport
+from crownstone_uart.core.uart.uartPackets.AssetSidReport import AssetSidReport
 from crownstone_uart.core.uart.uartPackets.NearestCrownstones import NearestCrownstoneTrackingUpdate, NearestCrownstoneTrackingTimeout
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
@@ -226,6 +227,11 @@ class UartParser:
             packet = NearestCrownstoneTrackingTimeout()
             packet.fromData(messagePacket.payload)
             UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
+
+        elif opCode == UartRxType.UART_OPCODE_TX_ASSET_RSSI_SID_DATA:
+            _LOGGER.debug(f"Received UART_OPCODE_TX_ASSET_RSSI_SID_DATA: {messagePacket.payload}")
+            packet = AssetSidReport(messagePacket.payload)
+            UartEventBus.emit(UartTopics.assetTrackingReport, packet)
 
 
         ####################
