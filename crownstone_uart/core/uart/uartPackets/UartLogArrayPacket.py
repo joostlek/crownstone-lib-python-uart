@@ -18,10 +18,10 @@ class UartLogArrayPacket(BasePacket):
 		self.elementSize = 0
 		self.elementData = None
 		if data is not None:
-			self.parse(data)
+			self.deserialize(data)
 
-	def _parse(self, reader: BufferReader):
-		self.header.parse(reader)
+	def _deserialize(self, reader: BufferReader):
+		self.header.deserialize(reader)
 		self.elementType = reader.getUInt8()
 		self.elementSize = reader.getUInt8()
 		self.elementData = reader.getRemainingBytes()

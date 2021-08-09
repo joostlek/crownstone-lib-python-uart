@@ -12,9 +12,9 @@ class AssetMacReport(BasePacket):
         self.channel: int         = 0
 
         if data is not None:
-            self.parse(data)
+            self.deserialize(data)
 
-    def _parse(self, reader: BufferReader):
+    def _deserialize(self, reader: BufferReader):
         self.assetMacAddress = Conversion.uint8_array_to_address(bytearray(reader.getBytes(6)))
         self.crownstoneId    = reader.getUInt8()
         self.rssi            = reader.getInt8()

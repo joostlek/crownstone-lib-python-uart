@@ -23,9 +23,9 @@ class UartLogHeaderPacket(BasePacket):
 		self.newLine = False
 
 		if data is not None:
-			self.parse(data)
+			self.deserialize(data)
 
-	def _parse(self, reader: BufferReader):
+	def _deserialize(self, reader: BufferReader):
 		self.fileNameHash = reader.getUInt32()
 		self.lineNr = reader.getUInt16()
 		self.logLevel = reader.getUInt8()
