@@ -41,7 +41,7 @@ class UartMessagePacket:
 			_LOGGER.warning(F"Parse error: {e}")
 			return False
 
-	def getPacket(self):
+	def serialize(self):
 		# Header: 1B device ID, 2B opcode
 
 		# construct the basePacket, which is used for CRC calculation

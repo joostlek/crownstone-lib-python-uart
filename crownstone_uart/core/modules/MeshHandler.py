@@ -50,16 +50,16 @@ class MeshHandler:
         stoneSwitchPacket = StoneMultiSwitchPacket(crownstone_id, switch_val)
 
         # wrap it in a mesh multi switch packet
-        meshMultiSwitchPacket = MeshMultiSwitchPacket([stoneSwitchPacket]).getPacket()
+        meshMultiSwitchPacket = MeshMultiSwitchPacket([stoneSwitchPacket]).serialize()
 
         # wrap that in a control packet
-        controlPacket = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).getPacket()
+        controlPacket = ControlPacket(ControlType.MULTISWITCH).loadByteArray(meshMultiSwitchPacket).serialize()
 
         # wrap that in a uart message
-        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
 
         # finally wrap it in a uart wrapper packet
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         # send over uart
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
@@ -77,14 +77,14 @@ class MeshHandler:
 
     async def send_no_op(self):
         control_packet = ControlPacket(ControlType.NO_OPERATION)
-        await self._command_via_mesh_broadcast(control_packet.getPacket())
+        await self._command_via_mesh_broadcast(control_packet.serialize())
 
     async def reset_rssi_between_stones(self, crownstone_uid_array: List[int] = None):
         control_packet = ControlPacket(ControlType.RESET_RSSI_BETWEEN_STONES)
         if (crownstone_uid_array == None):
-            return await self._command_via_mesh_broadcast(control_packet.getPacket())
+            return await self._command_via_mesh_broadcast(control_packet.serialize())
         else:
-            return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, control_packet.getPacket())
+            return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, control_packet.serialize())
 
     async def reset_errors(self):
         control_packet = ControlPacketsGenerator.getResetErrorPacket(0xFFFFFFFF)
@@ -93,7 +93,7 @@ class MeshHandler:
     async def set_tx_power(self, crownstone_uid_array: List[int], txPower: int):
         statePacket = ControlStateSetPacket(StateType.TX_POWER)
         statePacket.loadInt8(txPower)
-        return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, statePacket.getPacket())
+        return await self._command_via_mesh_broadcast_acked(crownstone_uid_array, statePacket.serialize())
 
     async def set_ibeacon_uuid(self, crownstone_id: int, uuid: str, index: int = 0) -> MeshResult:
         """
@@ -105,7 +105,7 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_UUID, index)
         statePacket.loadByteArray(Conversion.ibeaconUUIDString_to_reversed_uint8_array(uuid))
-        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.serialize())
 
 
     async def set_ibeacon_major(self, crownstone_id: int, major: int, index: int = 0) -> MeshResult:
@@ -118,7 +118,7 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MAJOR, index)
         statePacket.loadUInt16(major)
-        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.serialize())
 
 
     async def set_ibeacon_minor(self, crownstone_id: int, minor: int, index: int = 0) -> MeshResult:
@@ -131,7 +131,7 @@ class MeshHandler:
         """
         statePacket = ControlStateSetPacket(StateType.IBEACON_MINOR, index)
         statePacket.loadUInt16(minor)
-        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.getPacket())
+        return await self._set_state_via_mesh_acked(crownstone_id, statePacket.serialize())
 
 
     async def periodically_activate_ibeacon_index(self, crownstone_uid_array: List[int], index : int, interval_seconds: int, offset_seconds: int = 0) -> MeshResult:
@@ -202,10 +202,10 @@ class MeshHandler:
     async def _set_state_via_mesh_acked(self, crownstone_id: int, packet: bytearray) -> MeshResult:
         # 1:1 message to N crownstones with acks (only N = 1 supported for now)
         # flag value: 2
-        corePacket    = MeshSetStatePacket(crownstone_id, packet).getPacket()
-        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        corePacket    = MeshSetStatePacket(crownstone_id, packet).serialize()
+        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).serialize()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         resultCollector     = Collector(timeout=2,  topic=SystemTopics.resultPacket)
         individualCollector = BatchCollector(timeout=15, topic=SystemTopics.meshResultPacket)
@@ -233,10 +233,10 @@ class MeshHandler:
         # this is only for time and noop
         # broadcast to all:
         # value: 1
-        corePacket = MeshBroadcastPacket(packet).getPacket()
-        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        corePacket = MeshBroadcastPacket(packet).serialize()
+        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).serialize()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         resultCollector = Collector(timeout=2, topic=SystemTopics.resultPacket)
 
@@ -260,10 +260,10 @@ class MeshHandler:
         # this is only for the set_iBeacon_config_id
         # broadcast to all, but retry until ID's in list have acked or timeout
         # value: 3
-        corePacket    = MeshBroadcastAckedPacket(crownstone_uid_array, packet).getPacket()
-        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).getPacket()
-        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        corePacket    = MeshBroadcastAckedPacket(crownstone_uid_array, packet).serialize()
+        controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).serialize()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         resultCollector     = Collector(timeout=2, topic=SystemTopics.resultPacket)
         individualCollector = BatchCollector(timeout=15, topic=SystemTopics.meshResultPacket)
