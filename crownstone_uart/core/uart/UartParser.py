@@ -172,6 +172,7 @@ class UartParser:
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
             result = parseOpcode7(messagePacket.payload)
+            _LOGGER.debug(f"Received service data: {result}")
             if hasattr(result,"crownstoneId"):
                 UartEventBus.emit(SystemTopics.stateUpdate, (result.crownstoneId, result))
 
