@@ -3,6 +3,9 @@
 """An example that switches a Crownstone, and prints the power usage of the selected Crownstone."""
 
 import time
+
+from crownstone_core.packets.serviceDataParsers.containers.elements.AdvTypes import AdvType
+
 from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
 
 
@@ -12,9 +15,10 @@ targetCrownstoneId = 3
 
 def showNewData(data):
 	global targetCrownstoneId
-	if data["id"] == targetCrownstoneId:
+	if data.crownstoneId == targetCrownstoneId:
 		print("New data received!")
-		print("PowerUsage of crownstone", data["id"], data["powerUsageReal"])
+		if data.type == AdvType.CROWNSTONE_STATE or data.type == AdvType.EXTERNAL_STATE:
+			print(f"PowerUsage of crownstone {data.crownstoneId} is {data.powerUsageReal}W")
 		print("-------------------")
 
 
