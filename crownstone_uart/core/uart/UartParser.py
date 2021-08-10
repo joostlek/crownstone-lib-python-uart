@@ -219,14 +219,12 @@ class UartParser:
 
         elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
             _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_UPDATE: {messagePacket.payload}")
-            packet = NearestCrownstoneTrackingUpdate()
-            packet.fromData(messagePacket.payload)
+            packet = NearestCrownstoneTrackingUpdate(messagePacket.payload)
             UartEventBus.emit(UartTopics.nearestCrownstoneTrackingUpdate, packet)
 
         elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_TIMEOUT:
             _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_TIMEOUT: {messagePacket.payload}")
-            packet = NearestCrownstoneTrackingTimeout()
-            packet.fromData(messagePacket.payload)
+            packet = NearestCrownstoneTrackingTimeout(messagePacket.payload)
             UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
 
         elif opCode == UartRxType.UART_OPCODE_TX_ASSET_RSSI_SID_DATA:

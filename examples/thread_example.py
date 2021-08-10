@@ -1,10 +1,19 @@
 import threading
 import time
-import asyncio, logging
+import asyncio
 
-logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
+"""
+An example that switches a Crownstone, and prints the power usage of the selected Crownstone.
+
+But now it runs it its own thread.
+"""
 
 from crownstone_uart import CrownstoneUart
+
+# This is the id of the Crownstone we will be switching
+# change it to match the Crownstone Id you want to switch!
+targetCrownstoneId = 38
+
 
 class UartThreadExample(threading.Thread):
 
@@ -23,9 +32,25 @@ class UartThreadExample(threading.Thread):
 
     async def runIt(self):
         await self.uart.initialize_usb()
+        self.switch_crownstone()
 
     def runIt_sync(self):
         self.uart.initialize_usb_sync()
+        self.switch_crownstone()
+
+    def switch_crownstone(self):
+        turnOn = True
+        for i in range(0, 10):
+            if not self.uart.running:
+                break
+
+            if turnOn:
+                print("Switching Crownstone on  (iteration: ", i,")")
+            else:
+                print("Switching Crownstone off (iteration: ", i,")")
+            self.uart.switch_crownstone(targetCrownstoneId, on = turnOn)
+            turnOn = not turnOn
+            time.sleep(2)
 
     def stop(self):
         self.uart.stop()
