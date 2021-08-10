@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from crownstone_core.Exceptions import CrownstoneError
+from crownstone_core.Exceptions import CrownstoneError, CrownstoneException
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
@@ -72,11 +72,11 @@ class UartParser:
     def handleUartMessage(self, messagePacket: UartMessagePacket):
         try:
             self._handleUartMessage(messagePacket)
-        except CrownstoneError as e:
+        except CrownstoneException as e:
             # TODO: don't we catch too many errors this way
             #  For example errors from code executed by emitted events.
             #  We only want to catch parse errors, but we're too lazy to put a try catch around every parse call.
-            _LOGGER.warning(f"Parse error: {e}")
+            _LOGGER.error(f"Parse error: {e}")
 
     def _handleUartMessage(self, messagePacket: UartMessagePacket):
         """
