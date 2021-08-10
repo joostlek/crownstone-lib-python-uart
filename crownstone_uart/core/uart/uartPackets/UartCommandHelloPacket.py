@@ -9,7 +9,7 @@ class UartCommandHelloPacket:
         self.hasInternet = hasInternet
         self.hasError = hasError
 
-    def getPacket(self):
+    def serialize(self):
         flags = 0 # Uint 8
         if self.encryptionRequired: flags = flags | (1 << 0)
         if self.hasBeenSetUp:       flags = flags | (1 << 1)

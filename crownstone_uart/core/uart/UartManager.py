@@ -85,15 +85,15 @@ class UartManager(threading.Thread):
             self.port = None
 
     def echo(self, string):
-        controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(string).getPacket()
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(string).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def writeHello(self):
-        helloPacket = UartCommandHelloPacket().getPacket()
-        uartMessage = UartMessagePacket(UartTxType.HELLO, helloPacket).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        helloPacket = UartCommandHelloPacket().serialize()
+        uartMessage = UartMessagePacket(UartTxType.HELLO, helloPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
 
     def initialize(self):

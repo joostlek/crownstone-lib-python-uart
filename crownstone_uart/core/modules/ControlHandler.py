@@ -109,8 +109,8 @@ class ControlHandler:
         TODO: use a ControlPacket as param, instead of int array.
         """
         _LOGGER.debug(f"Write control packet {controlPacket}")
-        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         resultCollector = Collector(timeout=1, topic=SystemTopics.resultPacket)
         # send the message to the Crownstone

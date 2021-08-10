@@ -158,13 +158,13 @@ class CrownstoneUart:
 
     def uart_echo(self, payloadString):
         # wrap that in a control packet
-        controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).getPacket()
+        controlPacket = ControlPacket(ControlType.UART_MESSAGE).loadString(payloadString).serialize()
 
         # wrap that in a uart message
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
 
         # finally, wrap it in an uart wrapper packet
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         # send over uart
         result = UartWriter(uartPacket).write_sync()

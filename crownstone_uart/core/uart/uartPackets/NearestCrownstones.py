@@ -10,9 +10,9 @@ class NearestCrownstoneTrackingUpdate(BasePacket):
         self.channel      = 0
 
         if data is not None:
-            self.parse(data)
+            self.deserialize(data)
 
-    def _parse(self, reader: BufferReader):
+    def _deserialize(self, reader: BufferReader):
         self.assetId      = reader.getUInt8() + (reader.getUInt8() << 8) + (reader.getUInt8() << 16)
         self.crownstoneId = reader.getUInt8()
         self.rssi         = reader.getInt8()
@@ -31,9 +31,9 @@ class NearestCrownstoneTrackingTimeout(BasePacket):
         self.assetId      = 0
 
         if data is not None:
-            self.parse(data)
+            self.deserialize(data)
 
-    def _parse(self, reader: BufferReader):
+    def _deserialize(self, reader: BufferReader):
         self.assetId      = reader.getUInt8() + (reader.getUInt8() << 8) + (reader.getUInt8() << 16)
 
     def __str__(self):

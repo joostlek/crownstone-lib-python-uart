@@ -20,10 +20,10 @@ class UartLogPacket(BasePacket):
 		self.argBufs = []
 
 		if data is not None:
-			self.parse(data)
+			self.deserialize(data)
 
-	def _parse(self, reader: BufferReader):
-		self.header.parse(reader)
+	def _deserialize(self, reader: BufferReader):
+		self.header.deserialize(reader)
 		self.numArgs = reader.getUInt8()
 		self.argBufs = []
 		for i in range(0, self.numArgs):

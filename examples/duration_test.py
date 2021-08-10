@@ -13,7 +13,7 @@ uart.initialize_usb_sync()
 
 def showNewData(data):
 	print("New data received!")
-	print(json.dumps(data, indent=2))
+	print(data)
 	print("-------------------")
 
 	print("PING!")

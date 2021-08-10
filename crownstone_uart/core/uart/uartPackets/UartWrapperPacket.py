@@ -82,7 +82,7 @@ class UartWrapperPacket:
 			_LOGGER.warning(F"Parse error: {e}")
 			return False
 
-	def getPacket(self):
+	def serialize(self):
 		"""
 		Adds start token, header and CRC to payload. Escapes bytes.
 		"""

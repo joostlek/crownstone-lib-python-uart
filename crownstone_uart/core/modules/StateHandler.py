@@ -15,9 +15,9 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 class StateHandler:
 
     async def setPowerZero(self, mW: int):
-        controlPacket = ControlStateSetPacket(StateType.POWER_ZERO).loadInt32(mW).getPacket()
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).getPacket()
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        controlPacket = ControlStateSetPacket(StateType.POWER_ZERO).loadInt32(mW).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
 
         resultCollector = Collector(timeout=1,  topic=SystemTopics.resultPacket)
         # send the message to the Crownstone

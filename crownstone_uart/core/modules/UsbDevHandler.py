@@ -147,7 +147,7 @@ class UsbDevHandler:
         """
         if (mode < 0) or (mode > 3):
             return
-        controlPacket = ControlStateSetPacket(StateType.UART_ENABLED).loadUInt8(mode).getPacket()
+        controlPacket = ControlStateSetPacket(StateType.UART_ENABLED).loadUInt8(mode).serialize()
         self._send(UartTxType.CONTROL, controlPacket)
 
     def resetCrownstone(self):
@@ -155,28 +155,28 @@ class UsbDevHandler:
             Reset the Crownstone
             :return:
         """
-        resetPacket = ControlPacket(ControlType.RESET).getPacket()
+        resetPacket = ControlPacket(ControlType.RESET).serialize()
         self._send(UartTxType.CONTROL, resetPacket)
 
     def toggleRelay(self, isOn):
         val = 0
         if isOn:
             val = 1
-        switchPacket = ControlPacket(ControlType.RELAY).loadUInt8(val).getPacket()
+        switchPacket = ControlPacket(ControlType.RELAY).loadUInt8(val).serialize()
         self._send(UartTxType.CONTROL, switchPacket)
 
     def toggleIGBTs(self, isOn):
         val = 0
         if isOn:
             val = 100
-        switchPacket = ControlPacket(ControlType.PWM).loadUInt8(val).getPacket()
+        switchPacket = ControlPacket(ControlType.PWM).loadUInt8(val).serialize()
         self._send(UartTxType.CONTROL, switchPacket)
 
     def toggleAllowDimming(self, isOn):
         val = 0
         if isOn:
             val = 1
-        instructionPacket = ControlPacket(ControlType.ALLOW_DIMMING).loadUInt8(val).getPacket()
+        instructionPacket = ControlPacket(ControlType.ALLOW_DIMMING).loadUInt8(val).serialize()
         self._send(UartTxType.CONTROL, instructionPacket)
 
     # MARK: internal methods
@@ -190,7 +190,7 @@ class UsbDevHandler:
 
     def _send(self, opCode: UartTxType, payload: list):
         # send over uart
-        uartMessage = UartMessagePacket(opCode, payload).getPacket()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).getPacket()
+        uartMessage = UartMessagePacket(opCode, payload).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
         
