@@ -65,7 +65,7 @@ class UartRxType(IntEnum):
     NEAREST_CROWNSTONE_TRACKING_UPDATE  = 10109
     NEAREST_CROWNSTONE_TRACKING_TIMEOUT = 10110
     UART_OPCODE_TX_NEIGHBOUR_RSSI       = 10111
-    UART_OPCODE_TX_ASSET_RSSI_SID_DATA  = 10112
+    ASSET_SID_RSSI_REPORT               = 10112
 
     LOG =                              10200
     LOG_ARRAY =                        10201

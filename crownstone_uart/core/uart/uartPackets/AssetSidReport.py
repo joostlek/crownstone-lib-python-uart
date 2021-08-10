@@ -14,7 +14,7 @@ class AssetSidReport(BasePacket):
         if data is not None:
             self.parse(data)
 
-    def _parse(self, reader: BufferReader):
+    def _deserialize(self, reader: BufferReader):
         self.shortAssetId = Conversion.uint8_array_to_address(bytearray(reader.getBytes(3)))
         self.crownstoneId    = reader.getUInt8()
         self.rssi            = reader.getInt8()

@@ -227,8 +227,8 @@ class UartParser:
             packet = NearestCrownstoneTrackingTimeout(messagePacket.payload)
             UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
 
-        elif opCode == UartRxType.UART_OPCODE_TX_ASSET_RSSI_SID_DATA:
-            _LOGGER.debug(f"Received UART_OPCODE_TX_ASSET_RSSI_SID_DATA: {messagePacket.payload}")
+        elif opCode == UartRxType.ASSET_SID_RSSI_REPORT:
+            _LOGGER.debug(f"Received ASSET_SID_RSSI_REPORT: {messagePacket.payload}")
             packet = AssetSidReport(messagePacket.payload)
             UartEventBus.emit(UartTopics.assetTrackingReport, packet)
 
