@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from crownstone_core.Exceptions import CrownstoneError, CrownstoneException
+from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
