@@ -158,6 +158,7 @@ class UartWriter:
             self.__del__()
             return self.result
         else:
+            # TODO: Invalid error type.
             raise CrownstoneException(
                 "WRITE_EXCEPTION",
                 "Incorrect result type. Got " + str(self.result.resultCode) + ", expected one of " + str(success_codes),
@@ -167,6 +168,7 @@ class UartWriter:
 
     def _wrapUpFailedResult(self, wait_until_result):
         self.__del__()
+        # TODO: Invalid error type.
         raise CrownstoneException("WRITE_EXCEPTION", "No result received after writing to UART. Waited for " + str(
             wait_until_result) + " seconds", 404)
 
@@ -174,4 +176,5 @@ class UartWriter:
     def _wrapUpFailedWrite(self):
         # we should never arrive here. If the write went wrong, an error should have been thrown by the write method before we get here.
         self.__del__()
+        # TODO: Invalid error type.
         raise CrownstoneException("WRITE_EXCEPTION", "Write not completed, but no error was thrown.", 500)

@@ -50,7 +50,7 @@ class UartParser:
         :return:
         """
         if type(wrapperPacket) is not UartWrapperPacket:
-            raise TypeError
+            raise TypeError(f"Invalid type: {type(wrapperPacket)}")
 
         if wrapperPacket.protocolMajor != PROTOCOL_MAJOR:
             _LOGGER.warning(F"Unknown protocol: {wrapperPacket.protocolMajor}.{wrapperPacket.protocolMinor}")
