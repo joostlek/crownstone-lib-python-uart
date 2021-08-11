@@ -127,7 +127,7 @@ class CrownstoneUart:
             self.uartManager.stop()
         self.running = False
 
-    #
+
     def switch_crownstone(self, crownstoneId: int, on: bool):
         """
         :param crownstoneId:
