@@ -3,8 +3,6 @@
 """
 Example to upload asset filters via UART.
 """
-import argparse
-import os
 import asyncio
 
 import crownstone_core
@@ -14,22 +12,17 @@ from crownstone_uart import CrownstoneUart
 
 import logging
 
-argParser = argparse.ArgumentParser(description="Example to upload asset filters.")
-argParser.add_argument('--device',
-                       '-d',
-                       dest='device',
-                       metavar='path',
-                       type=str,
-                       default=None,
-                       help='The UART device to use, for example: /dev/ttyACM0')
-argParser.add_argument('--verbose',
-                       '-v',
-                       dest='verbose',
-                       action='store_true',
-                       help='Verbose output.')
-args = argParser.parse_args()
+##### Settings #####
 
-if args.verbose:
+# The uart port to use.
+# Can be set to /dev/ttyUSB0 for example.
+port = None
+
+# Set to true for debug logs.
+verbose = False
+
+
+if verbose:
 	logging.basicConfig(format='%(asctime)s %(levelname)-7s: %(message)s', level=logging.DEBUG)
 
 # Init the Crownstone UART lib.
@@ -41,7 +34,7 @@ print("uart version:", uart.__version__)
 async def main():
 	# The try except part is just to catch a control+c to gracefully stop the libs.
 	try:
-		await uart.initialize_usb(port=args.device, writeChunkMaxSize=64)
+		await uart.initialize_usb(port=port, writeChunkMaxSize=64)
 
 		filterId = 0
 		filter1 = AssetFilter(filterId)
