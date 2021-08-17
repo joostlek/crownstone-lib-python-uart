@@ -1,4 +1,4 @@
-# crownstone-lib-python-uart
+# Crownstone UART
 
 Official Python lib for Crownstone: "Crownstone Unified System Bridge", or **Crownstone USB** implementation.
 
@@ -14,11 +14,8 @@ You can install the package by pip:
 ```
 pip3 install crownstone-uart
 ```
-If you prefer the cutting edge (which may not always work!) or want to work on the library itself, use the setuptools.
 
-```
-python3 setup.py install
-```
+If you prefer the cutting edge (which may not always work!) or want to work on the library itself, use the setuptools: `python3 setup.py install`
 
 
 ## Requirements for the Crownstone USB
@@ -38,6 +35,9 @@ To add yourself:
 ```
 $ sudo adduser $USER dialout
 ```
+
+You may need to logout and login again.
+
 
 ### Raspbian
 Similar to Ubuntu.
@@ -59,22 +59,14 @@ An example is provided in the root of this repository.
 
 - First use the [phone app](https://crownstone.rocks/app) to setup your Crownstones and the Crownstone USB.
 - Make sure you update the Crownstones' firmware to at least 5.4.0.
-- Find out what port to use (e.g. `COM1`, `/dev/ttyUSB0`, or `/dev/tty.SLAB_USBtoUART`) and fill this in at `discoveryExample.py` and `example.py` at the `initializeUSB` method.
-- install the CrownstoneUartLib library using the setup.py:
-
-```python
-python3 setup.py install
-
-# or:
-
-python setup.py install
-```
+- Find out what port to use (e.g. `COM1`, `/dev/ttyUSB0`, or `/dev/tty.SLAB_USBtoUART`), use this to initialize the library.
+- Have this library installed.
 
 ## Find the IDs of your Crownstones
 
-Firstly run the example script that simply lists the IDs of the Crownstones. They are located in /examples/examplesUsb:
+Firstly run the example script that simply lists the IDs of the Crownstones.:
 ```
-$ python3 ./examples/discoveryExample.py
+$ python3 ./examples/discovery_example.py
 ```
 
 Once some IDs are printed, use one of them for the next example. This can take a while because Crownstones, if not switched, only broadcast their state every 60 seconds.
@@ -82,75 +74,18 @@ Once some IDs are printed, use one of them for the next example. This can take a
 
 ## Switch a Crownstone, and show power usage.
 
-After filling in the port to use, and the Crownstone ID to switch, run the example with python 3:
+Edit the file `switch_example.py`:
+- Set `targetCrownstoneId` to a Crownstone ID that was found in the previous example.
+
+Run the file:
 ```
-$ python3 ./examples/example.py
-```
-
-
-## The code
-
-The example is shown below to get an idea of how everything works:
-
-```python
-#!/usr/bin/env python3
-
-"""An example that switches a Crownstone, and prints the power usage of the selected Crownstone."""
-
-import time
-from crownstone_uart import CrownstoneUart, UartEventBus, UartTopics
-
-
-# This is the id of the Crownstone we will be switching
-# change it to match the Crownstone Id you want to switch!
-targetCrownstoneId = 3
-
-def showNewData(data):
-	global targetCrownstoneId
-	if data["id"] == targetCrownstoneId:
-		print("New data received!")
-		print("PowerUsage of crownstone", data["id"], data["powerUsageReal"])
-		print("-------------------")
-
-
-uart = CrownstoneUart()
-
-# Start up the USB bridge.
-uart.initialize_usb_sync()
-# you can alternatively do this async by
-# await uart.initialize_usb()
-
-# Set up event listeners
-UartEventBus.subscribe(UartTopics.newDataAvailable, showNewData)
-
-# Switch this Crownstone on and off.
-turnOn = True
-
-# The try except part is just to catch a control+c, time.sleep does not appreciate being killed.
-try:
-	for i in range(0, 10):
-		if not uart.running:
-			break
-
-		if turnOn:
-			print("Switching Crownstone on  (iteration: ", i,")")
-		else:
-			print("Switching Crownstone off (iteration: ", i,")")
-		uart.switch_crownstone(targetCrownstoneId, on = turnOn)
-
-		turnOn = not turnOn
-		time.sleep(2)
-except KeyboardInterrupt:
-	print("\nClosing example.... Thanks for your time!")
-
-uart.stop()
-
+$ python3 ./examples/switch_example.py
 ```
 
 
-# Documentation
+# API documentation
 
-[The docs can be found here.](./DOCUMENTATION.md)
+[The API documentation can be found here.](./DOCUMENTATION.md)
 
 
 # License

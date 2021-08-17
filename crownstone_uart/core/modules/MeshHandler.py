@@ -21,14 +21,15 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 class MeshHandler:
 
+    # TODO: make async, wait for uart reply.
     def turn_crownstone_on(self, crownstone_id: int):
         self._switch_crownstone(crownstone_id, SwitchValSpecial.SMART_ON)
 
-
+    # TODO: make async, wait for uart reply.
     def turn_crownstone_off(self, crownstone_id: int):
         self._switch_crownstone(crownstone_id, 0)
 
-
+    # TODO: make async, wait for uart reply.
     def set_crownstone_switch(self, crownstone_id: int, switch_val: int):
         """
         :param crownstone_id:
@@ -38,7 +39,7 @@ class MeshHandler:
 
         self._switch_crownstone(crownstone_id, switch_val)
 
-
+    # TODO: make async, wait for uart reply.
     def _switch_crownstone(self,crownstone_id: int, switch_val: int):
         """
         :param crownstone_id:

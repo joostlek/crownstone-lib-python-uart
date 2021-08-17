@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from crownstone_core.Exceptions import CrownstoneError, CrownstoneException
+from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
@@ -51,7 +51,7 @@ class UartParser:
         :return:
         """
         if type(wrapperPacket) is not UartWrapperPacket:
-            raise TypeError
+            raise TypeError(f"Invalid type: {type(wrapperPacket)}")
 
         if wrapperPacket.protocolMajor != PROTOCOL_MAJOR:
             _LOGGER.warning(F"Unknown protocol: {wrapperPacket.protocolMajor}.{wrapperPacket.protocolMinor}")
@@ -217,15 +217,15 @@ class UartParser:
             packet = AssetMacReport(messagePacket.payload)
             UartEventBus.emit(UartTopics.assetTrackingReport, packet)
 
-        elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
-            _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_UPDATE: {messagePacket.payload}")
-            packet = NearestCrownstoneTrackingUpdate(messagePacket.payload)
-            UartEventBus.emit(UartTopics.nearestCrownstoneTrackingUpdate, packet)
-
-        elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_TIMEOUT:
-            _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_TIMEOUT: {messagePacket.payload}")
-            packet = NearestCrownstoneTrackingTimeout(messagePacket.payload)
-            UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
+        # elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
+        #     _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_UPDATE: {messagePacket.payload}")
+        #     packet = NearestCrownstoneTrackingUpdate(messagePacket.payload)
+        #     UartEventBus.emit(UartTopics.nearestCrownstoneTrackingUpdate, packet)
+        #
+        # elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_TIMEOUT:
+        #     _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_TIMEOUT: {messagePacket.payload}")
+        #     packet = NearestCrownstoneTrackingTimeout(messagePacket.payload)
+        #     UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
 
         elif opCode == UartRxType.ASSET_SID_RSSI_REPORT:
             _LOGGER.debug(f"Received ASSET_SID_RSSI_REPORT: {messagePacket.payload}")

@@ -1,6 +1,6 @@
 import logging
 
-from crownstone_core.Exceptions import CrownstoneError
+from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.util.BufferReader import BufferReader
 from crownstone_core.util.CRC import crc16ccitt
 from crownstone_core.util.Conversion import Conversion
@@ -78,7 +78,7 @@ class UartWrapperPacket:
 			self.messageType   = reader.getUInt8()
 			self.payload       = reader.getRemainingBytes()
 			return True
-		except CrownstoneError as e:
+		except CrownstoneException as e:
 			_LOGGER.warning(F"Parse error: {e}")
 			return False
 
