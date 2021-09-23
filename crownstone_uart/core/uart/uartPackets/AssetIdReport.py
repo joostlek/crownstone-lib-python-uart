@@ -18,14 +18,15 @@ class AssetIdReport(BasePacket):
     def _deserialize(self, reader: BufferReader):
         self.assetId        = reader.getUInt8() + (reader.getUInt8() << 8) + (reader.getUInt8() << 16)
         self.crownstoneId   = reader.getUInt8()
-        self.rssi           = reader.getInt8()
-        self.channel        = reader.getUInt8()
 
         self.passedFilterIds.clear()
         passedFilterBitmask = reader.getUInt8()
         for i in range(0, 8):
             if is_bit_set(passedFilterBitmask, i):
                 self.passedFilterIds.append(i)
+        
+        self.rssi           = reader.getInt8()
+        self.channel        = reader.getUInt8()
 
     def __str__(self):
         return f"AssetIdReport(" \
