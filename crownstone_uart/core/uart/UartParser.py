@@ -9,7 +9,6 @@ from crownstone_core.util.Conversion import Conversion
 
 from crownstone_uart.core.uart.uartPackets.AssetMacReport import AssetMacReport
 from crownstone_uart.core.uart.uartPackets.AssetSidReport import AssetSidReport
-from crownstone_uart.core.uart.uartPackets.NearestCrownstones import NearestCrownstoneTrackingUpdate, NearestCrownstoneTrackingTimeout
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
@@ -216,16 +215,6 @@ class UartParser:
             _LOGGER.debug(f"Received ASSET_MAC_RSSI_REPORT: {messagePacket.payload}")
             packet = AssetMacReport(messagePacket.payload)
             UartEventBus.emit(UartTopics.assetTrackingReport, packet)
-
-        # elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_UPDATE:
-        #     _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_UPDATE: {messagePacket.payload}")
-        #     packet = NearestCrownstoneTrackingUpdate(messagePacket.payload)
-        #     UartEventBus.emit(UartTopics.nearestCrownstoneTrackingUpdate, packet)
-        #
-        # elif opCode == UartRxType.NEAREST_CROWNSTONE_TRACKING_TIMEOUT:
-        #     _LOGGER.debug(f"Received NEAREST_CROWNSTONE_TRACKING_TIMEOUT: {messagePacket.payload}")
-        #     packet = NearestCrownstoneTrackingTimeout(messagePacket.payload)
-        #     UartEventBus.emit(UartTopics.nearestCrownstoneTrackingTimeout, packet)
 
         elif opCode == UartRxType.ASSET_SID_RSSI_REPORT:
             _LOGGER.debug(f"Received ASSET_SID_RSSI_REPORT: {messagePacket.payload}")
