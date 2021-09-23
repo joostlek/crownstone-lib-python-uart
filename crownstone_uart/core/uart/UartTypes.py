@@ -61,10 +61,10 @@ class UartRxType(IntEnum):
     MESH_ACK_ALL_RESULT = 		       10106
     RSSI_PING_MESSAGE =                10107
 
-    ASSET_MAC_RSSI_REPORT               = 10108 # TODO: rename UART_OPCODE_TX_ASSET_RSSI_MAC_DATA
+    ASSET_MAC_RSSI_REPORT =            10108
 
-    UART_OPCODE_TX_NEIGHBOUR_RSSI       = 10111
-    ASSET_SID_RSSI_REPORT               = 10112
+    NEIGHBOUR_RSSI =                   10111
+    ASSET_ID_RSSI_REPORT =             10112
 
     LOG =                              10200
     LOG_ARRAY =                        10201

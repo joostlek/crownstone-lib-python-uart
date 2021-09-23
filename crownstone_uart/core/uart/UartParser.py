@@ -7,8 +7,8 @@ from crownstone_core.packets.ServiceData import ServiceData
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
 from crownstone_core.util.Conversion import Conversion
 
+from crownstone_uart.core.uart.uartPackets.AssetIdReport import AssetIdReport
 from crownstone_uart.core.uart.uartPackets.AssetMacReport import AssetMacReport
-from crownstone_uart.core.uart.uartPackets.AssetSidReport import AssetSidReport
 from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
@@ -216,10 +216,10 @@ class UartParser:
             packet = AssetMacReport(messagePacket.payload)
             UartEventBus.emit(UartTopics.assetTrackingReport, packet)
 
-        elif opCode == UartRxType.ASSET_SID_RSSI_REPORT:
-            _LOGGER.debug(f"Received ASSET_SID_RSSI_REPORT: {messagePacket.payload}")
-            packet = AssetSidReport(messagePacket.payload)
-            UartEventBus.emit(UartTopics.assetTrackingReport, packet)
+        elif opCode == UartRxType.ASSET_ID_RSSI_REPORT:
+            _LOGGER.debug(f"Received ASSET_ID_RSSI_REPORT: {messagePacket.payload}")
+            packet = AssetIdReport(messagePacket.payload)
+            UartEventBus.emit(UartTopics.assetIdReport, packet)
 
 
         ####################
