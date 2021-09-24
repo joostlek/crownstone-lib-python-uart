@@ -277,11 +277,8 @@ This topic will print anything you send to the USB dongle using CrownstoneUart.u
  }
 ```
 
+### `UartTopics.assetIdReport`
+This topic will give you an AssetIdReport class from the asset tracking system. This is only emitted if you've configured asset filters on your Crownstones to do so.
+
 ### `UartTopics.assetTrackingReport`
-This topic will give you a AssetMacReport class from the asset tracking system. This is only emitted if you've configured your Crownstone to do so.
-
-### `UartTopics.nearestCrownstoneTrackingUpdate`
-This topic will give you a NearestCrownstoneTrackingUpdate class from the asset localization system. This is only emitted if you've configured your Crownstone to do so.
-
-### `UartTopics.nearestCrownstoneTrackingTimeout`
-This topic will give you a NearestCrownstoneTrackingTimeout class from the asset localization system. This is only emitted if you've configured your Crownstone to do so.
+This topic will give you an AssetMacReport class from the asset tracking system. This is only emitted if you've configured asset filters on your Crownstones to do so.
