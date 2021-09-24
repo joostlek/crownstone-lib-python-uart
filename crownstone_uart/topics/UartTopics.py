@@ -12,5 +12,3 @@ class UartTopics:
 
     assetIdReport = "assetIdReport" # Data is an AssetIdReport class instance.
     assetTrackingReport = "assetTrackingReport" # Data is an AssetMacReport class instance.
-    nearestCrownstoneTrackingUpdate = "nearestCrownstoneTrackingUpdate" # Data is a NearestCrownstoneTrackingUpdate class instance
-    nearestCrownstoneTrackingTimeout = "nearestCrownstoneTrackingTimeout" # Data is a NearestCrownstoneTrackingTimeout class instance
