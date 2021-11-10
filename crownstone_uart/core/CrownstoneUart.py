@@ -6,10 +6,6 @@ import time
 from crownstone_core.protocol.BlePackets import ControlPacket
 from crownstone_core.protocol.BluenetTypes import ControlType
 
-from crownstone_core.packets.microapp.MicroappHeaderPacket import MicroappHeaderPacket
-from crownstone_core.packets.microapp.MicroappInfoPacket import MicroappInfoPacket
-from crownstone_core.packets.microapp.MicroappUploadPacket import MicroappUploadPacket
-
 from crownstone_uart.core.modules.ControlHandler import ControlHandler
 from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.core.modules.MeshHandler import MeshHandler
@@ -169,67 +165,3 @@ class CrownstoneUart:
 
         # send over uart
         result = UartWriter(uartPacket).write_sync()
-
-    def remove_microapp(self, index: int) -> bool:
-        
-        # Wrap controltype into packet control packet
-        packet = MicroappHeaderPacket(index)
-        controlPacket = ControlPacket(ControlType.MICROAPP_REMOVE).loadByteArray(packet.serialize()).serialize()
-
-        # wrap that in a uart message
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
-
-        # finally, wrap it in an uart wrapper packet
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-
-        # send over uart
-        result = UartWriter(uartPacket).write_sync()
-        return result
-
-    def enable_microapp(self, index: int) -> bool:
-        
-        # Wrap controltype into packet control packet
-        packet = MicroappHeaderPacket(index)
-        controlPacket = ControlPacket(ControlType.MICROAPP_ENABLE).loadByteArray(packet.serialize()).serialize()
-
-        # wrap that in a uart message
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
-
-        # finally, wrap it in an uart wrapper packet
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-
-        # send over uart
-        result = UartWriter(uartPacket).write_sync()
-        print(result)
-
-    def validate_microapp(self, index: int) -> bool:
-        
-        # Wrap controltype into packet control packet
-        packet = MicroappHeaderPacket(index)
-        controlPacket = ControlPacket(ControlType.MICROAPP_VALIDATE).loadByteArray(packet.serialize()).serialize()
-
-        # wrap that in a uart message
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
-
-        # finally, wrap it in an uart wrapper packet
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-
-        # send over uart
-        result = UartWriter(uartPacket).write_sync()
-        return result
-
-    def disable_microapp(self, index: int) -> bool:
-        
-        # Wrap controltype into packet control packet
-        packet = MicroappHeaderPacket(index)
-        controlPacket = ControlPacket(ControlType.MICROAPP_DISABLE).loadByteArray(packet.serialize()).serialize()
-
-        # wrap that in a uart message
-        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
-
-        # finally, wrap it in an uart wrapper packet
-        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-
-        # send over uart
-        result = UartWriter(uartPacket).write_sync()
-        return result
