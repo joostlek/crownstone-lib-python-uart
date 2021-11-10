@@ -51,9 +51,6 @@ class CrownstoneUart:
     def is_ready(self) -> bool:
         return self.uartManager.is_ready()
 
-
-
-
     async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         """
         Initialize a Crownstone serial device. 
@@ -175,7 +172,7 @@ class CrownstoneUart:
 
     def remove_microapp(self, index: int):
         
-        # Create packet for Microapp cmd
+        # Wrap controltype into packet control packet
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_REMOVE).loadByteArray(packet.serialize()).serialize()
 
@@ -191,7 +188,7 @@ class CrownstoneUart:
 
     def enable_microapp(self, index: int):
         
-        # Create packet for Microapp enable cmd
+        # Wrap controltype into packet control packet
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_ENABLE).loadByteArray(packet.serialize()).serialize()
 
@@ -206,6 +203,8 @@ class CrownstoneUart:
         print(result)
 
     def validate_microapp(self, index: int):
+        
+        # Wrap controltype into packet control packet
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_VALIDATE).loadByteArray(packet.serialize()).serialize()
 
@@ -220,6 +219,8 @@ class CrownstoneUart:
         print(result)
 
     def disable_microapp(self, index: int):
+        
+        # Wrap controltype into packet control packet
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_DISABLE).loadByteArray(packet.serialize()).serialize()
 
