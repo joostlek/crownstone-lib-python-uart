@@ -93,7 +93,19 @@ Send a string command to the Crownstone. This will trigger a UartTopics.uartMess
 ### `is_ready()`
 Returns True if the uart is ready for commands, False if not.
 
+## Microapps
 
+### `remove_microapp(index: int)`
+Remove Microapp with index from Bluenet flash. Return True if succesfull.
+
+### `enable_microapp(index: int)`
+Enable a Microapp with index on Bluenet. Return True if succesfull.
+
+### `validate_microapp(index: int)`
+Validate a Microapp with index on Bluenet. Return True if succesfull.
+
+### `disable_microapp(index: int)`
+Disable a Microapp with index on Bluenet. Return True if succesfull.
 
 ## Mesh module
 
