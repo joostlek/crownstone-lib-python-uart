@@ -95,16 +95,16 @@ Returns True if the uart is ready for commands, False if not.
 
 ## Microapps
 
-### `remove_microapp(index: int)`
+### `remove_microapp(index: int) -> bool`
 Remove Microapp with index from Bluenet flash. Return True if succesfull.
 
-### `enable_microapp(index: int)`
+### `enable_microapp(index: int) -> bool`
 Enable a Microapp with index on Bluenet. Return True if succesfull.
 
-### `validate_microapp(index: int)`
+### `validate_microapp(index: int) -> bool`
 Validate a Microapp with index on Bluenet. Return True if succesfull.
 
-### `disable_microapp(index: int)`
+### `disable_microapp(index: int) -> bool`
 Disable a Microapp with index on Bluenet. Return True if succesfull.
 
 ## Mesh module
