@@ -173,7 +173,7 @@ class CrownstoneUart:
         # send over uart
         result = UartWriter(uartPacket).write_sync()
 
-    def remove_microapp(self, index):
+    def remove_microapp(self, index: int):
         
         # Create packet for Microapp cmd
         packet = MicroappHeaderPacket(index)
@@ -189,7 +189,7 @@ class CrownstoneUart:
         result = UartWriter(uartPacket).write_sync()
         print(result)
 
-    def enable_microapp(self, index):
+    def enable_microapp(self, index: int):
         
         # Create packet for Microapp enable cmd
         packet = MicroappHeaderPacket(index)
@@ -205,7 +205,7 @@ class CrownstoneUart:
         result = UartWriter(uartPacket).write_sync()
         print(result)
 
-    def validate_microapp(self, index):
+    def validate_microapp(self, index: int):
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_VALIDATE).loadByteArray(packet.serialize()).serialize()
 
@@ -219,7 +219,7 @@ class CrownstoneUart:
         result = UartWriter(uartPacket).write_sync()
         print(result)
 
-    def disable_microapp(self, index):
+    def disable_microapp(self, index: int):
         packet = MicroappHeaderPacket(index)
         controlPacket = ControlPacket(ControlType.MICROAPP_DISABLE).loadByteArray(packet.serialize()).serialize()
 
