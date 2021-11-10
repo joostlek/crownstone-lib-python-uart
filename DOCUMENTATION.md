@@ -96,16 +96,16 @@ Returns True if the uart is ready for commands, False if not.
 ## Microapps
 
 ### `remove_microapp(index: int) -> bool`
-Remove Microapp with index from Bluenet flash. Return True if succesfull.
+Remove microapp from flash memory in Bluenet. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
 
 ### `enable_microapp(index: int) -> bool`
-Enable a Microapp with index on Bluenet. Return True if succesfull.
+Enable microapp in Bluenet and load it in RAM. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
 
 ### `validate_microapp(index: int) -> bool`
-Validate a Microapp with index on Bluenet. Return True if succesfull.
+validate the binary of a microapp saved in Bluenet flash memory. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
 
 ### `disable_microapp(index: int) -> bool`
-Disable a Microapp with index on Bluenet. Return True if succesfull.
+Disable a running microapp in Bluenet by removing it from RAM. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
 
 ## Mesh module
 
