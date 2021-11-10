@@ -93,20 +93,6 @@ Send a string command to the Crownstone. This will trigger a UartTopics.uartMess
 ### `is_ready()`
 Returns True if the uart is ready for commands, False if not.
 
-## Microapps
-
-### `remove_microapp(index: int) -> bool`
-Remove microapp from flash memory in Bluenet. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
-
-### `enable_microapp(index: int) -> bool`
-Enable microapp in Bluenet and load it in RAM. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run. It is reccomended to run the validation function before enabling the microapp to make sure a microapp is able to run.
-
-### `validate_microapp(index: int) -> bool`
-validate the binary of a microapp saved in Bluenet flash memory. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
-
-### `disable_microapp(index: int) -> bool`
-Disable a running microapp in Bluenet by removing it from RAM. Return True if message is send correctly, it doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can be given, since Bluenet only supports a single app to run.
-
 ## Mesh module
 
 The mesh module houses most of the mesh commands. Some of these are presented on the main CrownstoneUart class for easy access.
