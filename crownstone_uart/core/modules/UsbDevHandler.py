@@ -5,8 +5,12 @@ from crownstone_uart.core.UartEventBus import UartEventBus
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
+from crownstone_uart.core.dataFlowManagers.UartWriter import UartWriter
 from crownstone_uart.topics.SystemTopics import SystemTopics
 
+from crownstone_core.packets.microapp.MicroappHeaderPacket import MicroappHeaderPacket
+from crownstone_core.packets.microapp.MicroappInfoPacket import MicroappInfoPacket
+from crownstone_core.packets.microapp.MicroappUploadPacket import MicroappUploadPacket
 
 class UsbDevHandler:
     
@@ -194,3 +198,60 @@ class UsbDevHandler:
         uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
         UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
         
+    def remove_microapp(self, index : int) -> bool:
+        """
+        Remove microapp from flash memory in Bluenet. Return True if message is send correctly, it
+        doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can
+        be given, since Bluenet only supports a single app to run.
+        """
+        packet = MicroappHeaderPacket(index)
+        controlPacket = ControlPacket(
+            ControlType.MICROAPP_REMOVE).loadByteArray(packet.serialize()).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+        result = UartWriter(uartPacket).write_sync()
+        return result
+
+    def enable_microapp(self, index : int) -> bool:
+        """
+        Enable microapp in Bluenet and load it in RAM. Return True if message is send correctly,
+        it doesn't check if the command is set correctly in Bluenet. For now only an index of 0
+        can be given, since Bluenet only supports a single app to run. It is recommended to run
+        the validation function before enabling the microapp to make sure a microapp is able to
+        run.
+        """
+        packet = MicroappHeaderPacket(index)
+        controlPacket = ControlPacket(
+            ControlType.MICROAPP_ENABLE).loadByteArray(packet.serialize()).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+        result = UartWriter(uartPacket).write_sync()
+        return result
+
+    def validate_microapp(self, index : int) -> bool:
+        """
+        validate the binary of a microapp saved in Bluenet flash memory. Return True if message is
+        send correctly, it doesn't check if the command is set correctly in Bluenet. For now only
+        an index of 0 can be given, since Bluenet only supports a single app to run.
+        """
+        packet = MicroappHeaderPacket(index)
+        controlPacket = ControlPacket(
+            ControlType.MICROAPP_VALIDATE).loadByteArray(packet.serialize()).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+        result = UartWriter(uartPacket).write_sync()
+        return result
+
+    def disable_microapp(self, index : int) -> bool:
+        """
+        Disable a running microapp in Bluenet by removing it from RAM. Return True if message is
+        send correctly, it doesn't check if the command is set correctly in Bluenet. For now only
+        an index of 0 can be given, since Bluenet only supports a single app to run.
+        """
+        packet = MicroappHeaderPacket(index)
+        controlPacket = ControlPacket(
+            ControlType.MICROAPP_DISABLE).loadByteArray(packet.serialize()).serialize()
+        uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+        result = UartWriter(uartPacket).write_sync()
+        return result

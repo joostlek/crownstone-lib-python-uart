@@ -47,9 +47,6 @@ class CrownstoneUart:
     def is_ready(self) -> bool:
         return self.uartManager.is_ready()
 
-
-
-
     async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
         """
         Initialize a Crownstone serial device. 
