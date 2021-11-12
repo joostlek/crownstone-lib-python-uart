@@ -93,6 +93,8 @@ Send a string command to the Crownstone. This will trigger a UartTopics.uartMess
 ### `is_ready()`
 Returns True if the uart is ready for commands, False if not.
 
+
+
 ## Mesh module
 
 The mesh module houses most of the mesh commands. Some of these are presented on the main CrownstoneUart class for easy access.

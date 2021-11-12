@@ -183,22 +183,7 @@ class UsbDevHandler:
         instructionPacket = ControlPacket(ControlType.ALLOW_DIMMING).loadUInt8(val).serialize()
         self._send(UartTxType.CONTROL, instructionPacket)
 
-    # MARK: internal methods
-    
-    def _getPayload(self, boolean):
-        payload = 0
-        if boolean:
-            payload = 1
-            
-        return [payload]
-
-    def _send(self, opCode: UartTxType, payload: list):
-        # send over uart
-        uartMessage = UartMessagePacket(opCode, payload).serialize()
-        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
-        
-    def remove_microapp(self, index : int) -> bool:
+    def remove_microapp(self, index : int):
         """
         Remove microapp from flash memory in Bluenet. Return True if message is send correctly, it
         doesn't check if the command is set correctly in Bluenet. For now only an index of 0 can
@@ -209,10 +194,9 @@ class UsbDevHandler:
             ControlType.MICROAPP_REMOVE).loadByteArray(packet.serialize()).serialize()
         uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-        result = UartWriter(uartPacket).write_sync()
-        return result
+        UartWriter(uartPacket).write_sync()
 
-    def enable_microapp(self, index : int) -> bool:
+    def enable_microapp(self, index : int):
         """
         Enable microapp in Bluenet and load it in RAM. Return True if message is send correctly,
         it doesn't check if the command is set correctly in Bluenet. For now only an index of 0
@@ -225,10 +209,9 @@ class UsbDevHandler:
             ControlType.MICROAPP_ENABLE).loadByteArray(packet.serialize()).serialize()
         uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-        result = UartWriter(uartPacket).write_sync()
-        return result
+        UartWriter(uartPacket).write_sync()
 
-    def validate_microapp(self, index : int) -> bool:
+    def validate_microapp(self, index : int):
         """
         validate the binary of a microapp saved in Bluenet flash memory. Return True if message is
         send correctly, it doesn't check if the command is set correctly in Bluenet. For now only
@@ -239,10 +222,9 @@ class UsbDevHandler:
             ControlType.MICROAPP_VALIDATE).loadByteArray(packet.serialize()).serialize()
         uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-        result = UartWriter(uartPacket).write_sync()
-        return result
+        UartWriter(uartPacket).write_sync()
 
-    def disable_microapp(self, index : int) -> bool:
+    def disable_microapp(self, index : int):
         """
         Disable a running microapp in Bluenet by removing it from RAM. Return True if message is
         send correctly, it doesn't check if the command is set correctly in Bluenet. For now only
@@ -253,5 +235,19 @@ class UsbDevHandler:
             ControlType.MICROAPP_DISABLE).loadByteArray(packet.serialize()).serialize()
         uartMessage   = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
         uartPacket    = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
-        result = UartWriter(uartPacket).write_sync()
-        return result
+        UartWriter(uartPacket).write_sync()
+
+
+
+    def _getPayload(self, boolean):
+        payload = 0
+        if boolean:
+            payload = 1
+            
+        return [payload]
+
+    def _send(self, opCode: UartTxType, payload: list):
+        # send over uart
+        uartMessage = UartMessagePacket(opCode, payload).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
