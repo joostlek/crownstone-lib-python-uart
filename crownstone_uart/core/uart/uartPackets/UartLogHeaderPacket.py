@@ -13,6 +13,7 @@ class UartLogHeaderPacket(BasePacket):
 	1B log level
 	1B flags:
 	- bit 0 = newLine
+	- bit 1 = reverse
 	"""
 
 	def __init__(self, data = None):
@@ -21,6 +22,7 @@ class UartLogHeaderPacket(BasePacket):
 		self.logLevel = None
 		# Flags:
 		self.newLine = False
+		self.reverse = False
 
 		if data is not None:
 			self.deserialize(data)
@@ -32,10 +34,12 @@ class UartLogHeaderPacket(BasePacket):
 
 		flags = reader.getUInt8()
 		self.newLine = (flags & (1 << 0)) != 0
+		self.reverse = (flags & (1 << 1)) != 0
 
 	def __str__(self):
 		return f"UartLogHeaderPacket(" \
 		       f"fileNameHash={self.fileNameHash}, " \
 		       f"lineNr={self.lineNr}, " \
 		       f"logLevel={self.logLevel}, " \
-		       f"newLine={self.newLine})"
+		       f"newLine={self.newLine}, " \
+		       f"reverse={self.reverse})"
