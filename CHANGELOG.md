@@ -1,5 +1,10 @@
 # Changelog
 
+## Release 2.3.0
+
+- Added support for reverse array logs.
+- Print asset filter reports in example.
+
 ## Release 2.2.0
 
 - Added assetIdReport topic.
