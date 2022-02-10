@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='crownstone-uart',
-    version="2.3.0",
+    version="1.1.0",
     packages=find_packages(exclude=["examples","testing"]),
     author="Crownstone B.V.",
     long_description=long_description,
