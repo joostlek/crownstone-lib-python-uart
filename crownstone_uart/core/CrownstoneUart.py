@@ -25,7 +25,7 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 _LOGGER = logging.getLogger(__name__)
 
 class CrownstoneUart:
-    __version__ = "2.2.0-git"
+    __version__ = "2.3.0"
 
     def __init__(self):
         self.uartManager = None
