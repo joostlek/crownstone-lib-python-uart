@@ -84,7 +84,7 @@ class UartBridge(threading.Thread):
                         additionalBytes = self.serialController.read(self.serialController.in_waiting)
                         bytesFromSerial = bytesFromSerial + additionalBytes
 
-                    UartEventBus.emit(SystemTopics.uartNewData, bytesFromSerial)
+                    UartEventBus.emit(SystemTopics.uartRawData, bytesFromSerial)
                     readBuffer.addByteArray(bytesFromSerial)
         except OSError or serial.SerialException:
             _LOGGER.info("Connection to USB Failed. Retrying...")
