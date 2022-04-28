@@ -16,8 +16,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class UartBridge(threading.Thread):
+    """
+    Thread that manages a serial port instance.
+    """
 
-    def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0):
+    def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0, verbosityLevel=None):
+        if verbosityLevel is not None:
+            _LOGGER.setLevel(verbosityLevel)
+
         self.bridge_exception_queue = exception_queue
         self.baudrate = baudrate
         self.port = port
@@ -71,15 +77,15 @@ class UartBridge(threading.Thread):
         _LOGGER.debug(F"Read starting on serial port.{self.port} {self.running}")
         try:
             while self.running:
-                bytesFromSerial = self.serialController.read()
+                bytesFromSerial = self.serialController.read() # reads single byte (blocks until it is received)
                 if bytesFromSerial:
-                    # clear out the entire read buffer
+                    # read all extra bytes in read buffer
                     if self.serialController.in_waiting > 0:
                         additionalBytes = self.serialController.read(self.serialController.in_waiting)
                         bytesFromSerial = bytesFromSerial + additionalBytes
-                    readBuffer.addByteArray(bytesFromSerial)
 
-            # print("Cleaning up UartBridge")
+                    UartEventBus.emit(SystemTopics.uartRawData, bytesFromSerial)
+                    readBuffer.addByteArray(bytesFromSerial)
         except OSError or serial.SerialException:
             _LOGGER.info("Connection to USB Failed. Retrying...")
         except KeyboardInterrupt:
