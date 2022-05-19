@@ -20,10 +20,7 @@ class UartBridge(threading.Thread):
     Thread that manages a serial port instance.
     """
 
-    def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0, verbosityLevel=None):
-        if verbosityLevel is not None:
-            _LOGGER.setLevel(verbosityLevel)
-
+    def __init__(self, exception_queue, port, baudrate, writeChunkMaxSize=0):
         self.bridge_exception_queue = exception_queue
         self.baudrate = baudrate
         self.port = port
@@ -74,7 +71,7 @@ class UartBridge(threading.Thread):
     def start_reading(self):
         readBuffer = UartReadBuffer()
         self.started = True
-        _LOGGER.debug(F"Read starting on serial port.{self.port} {self.running}")
+        _LOGGER.debug(F"Read starting on serial port {self.port} {self.running}")
         try:
             while self.running:
                 bytesFromSerial = self.serialController.read() # reads single byte (blocks until it is received)
