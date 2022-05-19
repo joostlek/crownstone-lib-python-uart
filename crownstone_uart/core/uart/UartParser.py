@@ -86,7 +86,7 @@ class UartParser:
         """
         opCode = messagePacket.opCode
         parsedData = None
-        # print("UART - opCode:", opCode, "payload:", dataPacket.payload)
+        # print("UART - opCode:", opCode, "payload:", messagePacket.payload)
 
         if opCode == UartRxType.HELLO:
             helloPacket = UartCrownstoneHelloPacket(messagePacket.payload)

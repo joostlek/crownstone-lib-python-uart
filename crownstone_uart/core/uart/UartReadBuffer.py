@@ -18,14 +18,23 @@ class UartReadBuffer:
     Start bytes, escaping, packet framing and crc checking are parsed.
 
     Emitted events:
-     - SystemTopics.uartNewPackage: succesfully parsed package.
-     - DevTopics.uartNoise: unexpected data, details are contained in event message.
+     - SystemTopics.uartNewPackage: successfully parsed packet.
+     - SystemTopics.uartDiscardedData
     """
 
     def __init__(self):
+        # Buffer with all the received bytes since last emit
+        self.rawBuffer = []
+
+        # Buffer with the parsed data: excludes start token, bytes are escaped,
         self.buffer = []
+
         self.escapingNextByte = False
+
+        # Set to True when the start token has been received.
         self.active = False
+
+        # Set when the packet size has been received.
         self.sizeToRead = 0
 
     def addByteArray(self, rawByteArray):
@@ -33,28 +42,29 @@ class UartReadBuffer:
             self.add(byte)
 
     def add(self, byte):
+        self.rawBuffer.append(byte)
+
         # An escape shouldn't be followed by a special byte.
         if self.escapingNextByte and (byte is START_TOKEN or byte is ESCAPE_TOKEN):
-            _LOGGER.warning("Special byte after escape token")
-            UartEventBus.emit(DevTopics.uartNoise, "special byte after escape token")
-            self.reset(offendingByte=byte)
+            _LOGGER.warning("Received special byte after escape token.")
+            self.reset(True)
             return
 
         # Activate on start token.
         if byte is START_TOKEN:
             if self.active:
-                _LOGGER.warning("MULTIPLE START TOKENS")
-                UartEventBus.emit(DevTopics.uartNoise, "multiple start token")
-                self.reset(offendingByte=byte)
+                _LOGGER.warning("Received multiple start tokens.")
+                self.reset(True)
             else:
+                # Reset to be sure.
                 self.reset()
 
             self.active = True
             return
 
         if not self.active:
-            # adding byte, but not started.
-            UartEventBus.emit(SystemTopics.uartNoiseData, [byte])
+            # Since the start token was not received, we discard this byte.
+            self.reset(True)
             return
 
         # Escape next byte on escape token.
@@ -77,7 +87,7 @@ class UartReadBuffer:
 
                 # Size to read shouldn't be 0.
                 if self.sizeToRead == 0:
-                    self.reset(bufferContainsNoise=True) # not adding byte here, it is already in the buffer.
+                    self.reset(True)
                     return
 
                 self.buffer = []
@@ -85,7 +95,7 @@ class UartReadBuffer:
 
         elif bufferSize >= self.sizeToRead:
             processSuccessful = self.process()
-            self.reset(bufferContainsNoise=not processSuccessful) # not adding byte here, it is already in the buffer.
+            self.reset(not processSuccessful)
             return
 
     def process(self):
@@ -104,7 +114,6 @@ class UartReadBuffer:
         wrapperSize = WRAPPER_HEADER_SIZE + CRC_SIZE
         if bufferSize < wrapperSize:
             _LOGGER.warning("Buffer too small")
-            UartEventBus.emit(DevTopics.uartNoise, "buffer too small")
             return False
 
         # Get the buffer between size field and CRC:
@@ -124,21 +133,16 @@ class UartReadBuffer:
             UartEventBus.emit(SystemTopics.uartNewPackage, wrapperPacket)
             return True
 
-    def reset(self, offendingByte=None, bufferContainsNoise=False):
+    def reset(self, discarded=False):
         """
-        Resets to initial state, emiting uartNoiseData if necessary.
+        Resets to initial state, emitting uartDiscardedData if necessary.
 
-        :param offendingByte: set this if parsing was reset due to protocol mishap caused by this byte
-        :param bufferContainsNoise: set this to true if buffer contains invalid data
+        :param discarded: True when reset due to discarded data.
         """
-        if offendingByte is not None:
-            # noise data was regocnized after parsing the offendingByte.
-            self.buffer += [offendingByte]
-            bufferContainsNoise = True
+        if discarded and len(self.rawBuffer):
+            UartEventBus.emit(SystemTopics.uartDiscardedData, self.rawBuffer)
 
-        if bufferContainsNoise:
-            UartEventBus.emit(SystemTopics.uartNoiseData, self.buffer)
-
+        self.rawBuffer = []
         self.buffer = []
         self.escapingNextByte = False
         self.active = False
