@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 2.4.0
+
+- Added topics uartDiscardedData and uartRawData.
+
 ## Release 2.3.0
 
 - Added support for reverse array logs.
