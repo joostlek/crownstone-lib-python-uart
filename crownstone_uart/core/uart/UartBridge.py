@@ -1,6 +1,7 @@
 import logging
 import sys
 import threading
+import traceback
 
 import serial
 import serial.tools.list_ports
@@ -88,6 +89,10 @@ class UartBridge(threading.Thread):
         except KeyboardInterrupt:
             self.running = False
             _LOGGER.debug("Closing serial connection.")
+        except Exception as error:
+            self.running = False
+            _LOGGER.error(f"Error in handling UART data: {error}")
+            traceback.print_exc()
 
         # close the serial controller
         self.serialController.close()
