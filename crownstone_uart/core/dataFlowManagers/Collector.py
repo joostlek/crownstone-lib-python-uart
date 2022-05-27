@@ -1,53 +1,133 @@
 import asyncio
 import time
+import logging
+from queue import Queue
+from typing import Callable, Any
 
 from crownstone_uart.core.UartEventBus import UartEventBus
 
+_LOGGER = logging.getLogger(__name__)
+
 class Collector:
-    
+    """
+    Class that waits for data from the given topic.
+    """
     def __init__(self, topic= None, timeout = 10, interval = 0.05):
-        self.response = None
+        """
+        :param topic:        The topic to receive data from.
+        :param timeout:      Timeout in seconds.
+        :param interval:     Polling interval.
+        """
+        # Config variables
+        self.topic = topic
         self.timeout = timeout
         self.interval = interval
 
+        # State variables
+        self.response = None
+        self.responses = Queue()
+        self.timeLeft = -1
+        self.callback = None
         self.cleanupId = None
-        if topic is not None:
-            self.cleanupId = UartEventBus.subscribe(topic, self.collect)
 
     def __del__(self):
-        UartEventBus.unsubscribe(self.cleanupId)
+        self._cleanup()
 
-    def clear(self):
+    def _start(self):
         self.response = None
+        self.responses = Queue()
+        self.timeLeft = self.timeout
+        if self.topic is not None:
+            self.cleanupId = UartEventBus.subscribe(self.topic, self._onData)
+        _LOGGER.debug(f"Start with timeLeft={self.timeLeft} and topic={self.topic}")
+
+    def _cleanup(self):
+        _LOGGER.debug(f"Cleanup")
+        if self.cleanupId is not None:
+            UartEventBus.unsubscribe(self.cleanupId)
+
+        # Don't clean up response yet, they are used as return data.
+        self.timeLeft = -1
+        self.callback = None
+        self.cleanupId = None
+
+    # def clear(self):
+    #     self.response = None
 
     async def receive(self):
-        counter = 0
-        while counter < self.timeout:
+        """
+        Wait for data from the given topic.
+
+        :return: The received data, in the format specified by the topic, or None on timeout.
+        """
+        self._start()
+        while self.timeLeft > 0:
             if self.response is not None:
-                # cleanup the listener(s)
-                UartEventBus.unsubscribe(self.cleanupId)
+                self._cleanup()
                 return self.response
 
             await asyncio.sleep(self.interval)
-            counter += self.interval
+            self.timeLeft -= self.interval
 
-        UartEventBus.unsubscribe(self.cleanupId)
+        self._cleanup()
         return None
-    
+
     def receive_sync(self):
-        counter = 0
-        while counter < self.timeout:
+        """
+        Wait for data from the given topic.
+
+        :return: The received data, in the format specified by the topic.
+        """
+        self._start()
+        while self.timeLeft > 0:
             if self.response is not None:
-                # cleanup the listener(s)
-                UartEventBus.unsubscribe(self.cleanupId)
+                self._cleanup()
                 return self.response
 
             time.sleep(self.interval)
-            counter += self.interval
+            self.timeLeft -= self.interval
 
-        UartEventBus.unsubscribe(self.cleanupId)
+        self._cleanup()
         return None
 
-    def collect(self, data):
-        self.response = data
+    async def receiveNext(self):
+        """
+        Wait for data from the given topic.
+
+        :return: The received data, in the format specified by the topic, or None on timeout.
+        """
+        if self.cleanupId is None:
+            self._start()
+
+        while self.timeLeft > 0:
+            if not self.responses.empty():
+                return self.responses.get()
+
+            await asyncio.sleep(self.interval)
+            self.timeLeft -= self.interval
+
+        self._cleanup()
+        return None
+
+    async def receiveMultiple(self, callback: Callable[[Any], bool]):
+        """
+        Wait for data and let the callback handle the data.
+        :param callback:          Function that handles the data and returns True to continue collecting, or False to stop collecting.
+        """
+        self._start()
+        self.callback = callback
+        await asyncio.sleep(self.timeLeft)
+        self._cleanup()
+
+    def _onData(self, data):
+        if self.callback is None:
+            self.response = data
+            self.responses.put(data)
+        else:
+            if not self.callback(data):
+                self._cleanup()
+
+        # To be sure: always clean up when timed out.
+        if self.timeLeft < 0:
+            self._cleanup()
 

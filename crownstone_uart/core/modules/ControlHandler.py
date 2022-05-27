@@ -3,6 +3,7 @@ import logging
 from typing import List
 
 from crownstone_core.Exceptions import CrownstoneException, CrownstoneError
+from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.assetFilter.FilterCommandPackets import FilterSummaryPacket, FilterSummariesPacket
 from crownstone_core.packets.assetFilter.builders.AssetFilter import AssetFilter
 from crownstone_core.packets.assetFilter.util import AssetFilterMasterCrc
@@ -30,6 +31,7 @@ class ControlHandler:
         :param masterVersion:     The new master version. If None, the master version will be increased by 1.
         :return:                  The new master version.
         """
+        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"setFilters")
         summaries = await self.getFilterSummaries()
         syncer = AssetFilterSyncer(summaries, filters, masterVersion)
@@ -57,6 +59,7 @@ class ControlHandler:
 
         :return:   The filter summaries packet.
         """
+        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"getFilterSummaries")
         result = await self._write(ControlPacketsGenerator.getGetFilterSummariesPacket())
         if result is None:
@@ -71,6 +74,7 @@ class ControlHandler:
 
         :param filter:  The asset filter to be uploaded.
         """
+        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"uploadFilter {filter}")
         chunker = FilterChunker(filter, 128)
         result = None
@@ -86,6 +90,7 @@ class ControlHandler:
 
         :param filterId:     The filter ID to be removed.
         """
+        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"removeFilter id={filterId}")
         return await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
 
@@ -97,6 +102,7 @@ class ControlHandler:
         :param filters:           A list of asset filters with filter ID, that are uploaded to the Crowstone.
         :param filterSummaries :  A list of filter summaries that are already on the Crownstone.
         """
+        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"commitFilterChanges masterVersion={masterVersion}")
         masterCrc = AssetFilterMasterCrc.get_master_crc_from_filters(filters, filterSummaries)
         return await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
@@ -124,3 +130,82 @@ class ControlHandler:
                 raise CrownstoneException(commandResultData.resultCode, f"Command has failed: result code is {commandResultData.resultCode}")
             return commandResultData.payload
         return None
+
+    async def _writeControlAndGetResult(
+            self,
+            controlPacket,
+            acceptedResultValues = [ResultValue.SUCCESS, ResultValue.SUCCESS_NO_CHANGE],
+            timeout = None
+    ) -> ResultPacket:
+        """
+        Writes the control packet, checks the result value, and returns the result packet.
+        :param controlPacket:          Serialized control packet to write.
+        :param acceptedResultValues:   List of result values that are ok.
+        :param timeout:                Timeout in seconds.
+        :returns:                      The result packet.
+        """
+        _LOGGER.debug(f"Write control packet {controlPacket}")
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+
+        if timeout is None:
+            timeout = 3
+
+        # Setup the result collector
+        resultCollector = Collector(timeout=timeout, topic=SystemTopics.resultPacket)
+
+        # Send the message to the Crownstone
+        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
+
+        # Wait for the result
+        resultPacket: ResultPacket = await resultCollector.receive()
+        _LOGGER.debug(f"resultPacket={resultPacket}")
+
+        if resultPacket is None:
+            raise CrownstoneException(CrownstoneError.TIMEOUT, f"No result received within {timeout} seconds")
+        if not resultPacket.valid:
+            raise CrownstoneException(CrownstoneError.INCORRECT_RESPONSE_LENGTH, "Result is invalid")
+        if resultPacket.resultCode not in acceptedResultValues:
+            raise CrownstoneException(CrownstoneError.RESULT_NOT_SUCCESS, f"Result code is {resultPacket.resultCode}")
+        return resultPacket
+
+    async def _writeControlAndWaitForSuccess(
+            self,
+            controlPacket,
+            timeout = 10,
+            acceptedResultValues = [ResultValue.SUCCESS, ResultValue.SUCCESS_NO_CHANGE]
+    ) -> ResultPacket:
+        """
+        Writes the control packet, and waits for success.
+        :param controlPacket:          Serialized control packet to write.
+        :param timeout:                Timeout in seconds.
+        :param acceptedResultValues:   List of result values that are considered a success.
+        :returns:                      The result packet.
+        """
+        _LOGGER.debug(f"Write control packet {controlPacket}")
+        uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
+        uartPacket = UartWrapperPacket(UartMessageType.UART_MESSAGE, uartMessage).serialize()
+
+        # Setup the result collector
+        resultCollector = Collector(timeout=timeout, topic=SystemTopics.resultPacket)
+
+        # Send the message to the Crownstone
+        UartEventBus.emit(SystemTopics.uartWriteData, uartPacket)
+
+        while True:
+            # Wait for the result
+            resultPacket: ResultPacket = await resultCollector.receiveNext()
+            _LOGGER.debug(f"resultPacket={resultPacket}")
+
+            if resultPacket is None:
+                raise CrownstoneException(CrownstoneError.TIMEOUT, f"No success received within {timeout} seconds")
+            if resultPacket.resultCode in acceptedResultValues:
+                return resultPacket
+            if not resultPacket.valid:
+                raise CrownstoneException(CrownstoneError.INCORRECT_RESPONSE_LENGTH, "Result is invalid")
+            if resultPacket.resultCode == ResultValue.WAIT_FOR_SUCCESS:
+                continue
+            if resultPacket.resultCode not in acceptedResultValues:
+                raise CrownstoneException(CrownstoneError.RESULT_NOT_SUCCESS,
+                                          f"Result code is {resultPacket.resultCode}")
+            return resultPacket
