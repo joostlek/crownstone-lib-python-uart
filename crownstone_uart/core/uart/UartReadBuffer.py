@@ -125,7 +125,6 @@ class UartReadBuffer:
 
         if calculatedCrc != sourceCrc:
             _LOGGER.warning("Failed CRC: {0} != {1} (data: {2})".format(calculatedCrc, sourceCrc, baseBuffer))
-            UartEventBus.emit(DevTopics.uartNoise, "crc mismatch")
             return False
 
         wrapperPacket = UartWrapperPacket()
