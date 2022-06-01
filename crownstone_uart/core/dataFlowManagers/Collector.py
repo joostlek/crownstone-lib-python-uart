@@ -39,10 +39,10 @@ class Collector:
         self.timeLeft = self.timeout
         if self.topic is not None:
             self.cleanupId = UartEventBus.subscribe(self.topic, self._onData)
-        _LOGGER.debug(f"Start with timeLeft={self.timeLeft} and topic={self.topic}")
+        _LOGGER.debug(f"Start result collector with timeLeft={self.timeLeft} and topic={self.topic}")
 
     def _cleanup(self):
-        _LOGGER.debug(f"Cleanup")
+        _LOGGER.debug(f"Cleanup result collector")
         if self.cleanupId is not None:
             UartEventBus.unsubscribe(self.cleanupId)
 
@@ -117,9 +117,11 @@ class Collector:
         self._start()
         self.callback = callback
         await asyncio.sleep(self.timeLeft)
+        callback(None)
         self._cleanup()
 
     def _onData(self, data):
+        _LOGGER.debug(f"Result collector received {data}")
         if self.callback is None:
             self.response = data
             self.responses.put(data)
