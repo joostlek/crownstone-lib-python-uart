@@ -196,17 +196,21 @@ class ControlHandler:
             # Wait for the result
             resultPacket: ResultPacket = await resultCollector.receiveNext()
             _LOGGER.debug(f"resultPacket={resultPacket}")
-            if resultPacket.resultCode == ResultValue.WAIT_FOR_SUCCESS:
-                continue
 
-            resultCollector._cleanup()
             if resultPacket is None:
+                resultCollector._cleanup()
                 raise CrownstoneException(CrownstoneError.TIMEOUT, f"No success received within {timeout} seconds")
             if resultPacket.resultCode in acceptedResultValues:
+                resultCollector._cleanup()
                 return resultPacket
             if not resultPacket.valid:
+                resultCollector._cleanup()
                 raise CrownstoneException(CrownstoneError.INCORRECT_RESPONSE_LENGTH, "Result is invalid")
+            if resultPacket.resultCode == ResultValue.WAIT_FOR_SUCCESS:
+                continue
             if resultPacket.resultCode not in acceptedResultValues:
+                resultCollector._cleanup()
                 raise CrownstoneException(CrownstoneError.RESULT_NOT_SUCCESS,
                                           f"Result code is {resultPacket.resultCode}")
+            resultCollector._cleanup()
             return resultPacket
