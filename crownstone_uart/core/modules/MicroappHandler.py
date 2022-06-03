@@ -14,13 +14,18 @@ class MicroappHandler:
         self.control = control
         pass
 
+    # It looks like the UART library cannot send larger commands.
+    MAX_CHUNK_SIZE = 32
+
     async def getMicroappInfo(self) -> MicroappInfoPacket:
         resultPacket = await self.control._writeControlAndGetResult(ControlPacket(ControlType.MICROAPP_GET_INFO).serialize())
         _LOGGER.info(f"getMicroappInfo {resultPacket}")
         infoPacket = MicroappInfoPacket(resultPacket.payload)
         return infoPacket
 
-    async def uploadMicroapp(self, data: bytearray, index: int = 0, protocol: int = 0, chunkSize: int = 128):
+    async def uploadMicroapp(self, data: bytearray, index: int = 0, protocol: int = 0, chunkSize: int = MAX_CHUNK_SIZE):
+        chunkSize = min(chunkSize, MicroappHandler.MAX_CHUNK_SIZE)
+
         for i in range(0, len(data), chunkSize):
             chunk = data[i : i + chunkSize]
             # Pad the chunk with 0xFF, so the size is a multiple of 4.
