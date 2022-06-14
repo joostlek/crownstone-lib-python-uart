@@ -14,6 +14,7 @@ from crownstone_uart.core.uart.UartTypes import UartRxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.AdcConfigPacket import AdcConfigPacket
 from crownstone_uart.core.uart.uartPackets.CurrentSamplesPacket import CurrentSamplesPacket
 from crownstone_uart.core.uart.uartPackets.PowerCalculationPacket import PowerCalculationPacket
+from crownstone_uart.core.uart.uartPackets.RssiBetweenStonesPacket import RssiBetweenStonesPacket
 from crownstone_uart.core.uart.uartPackets.UartCrownstoneHelloPacket import UartCrownstoneHelloPacket
 from crownstone_uart.core.uart.uartPackets.UartLogArrayPacket import UartLogArrayPacket
 from crownstone_uart.core.uart.uartPackets.UartLogPacket import UartLogPacket
@@ -206,6 +207,10 @@ class UartParser:
             packet = UartLogArrayPacket(messagePacket.payload)
             UartEventBus.emit(UartTopics.logArray, packet)
 
+        elif opCode == UartRxType.NEIGHBOUR_RSSI:
+            _LOGGER.debug(f"Received neighbour RSSI: {messagePacket.payload}")
+            packet = RssiBetweenStonesPacket(messagePacket.payload)
+            UartEventBus.emit(UartTopics.rssiBetweenStones, packet)
 
         #######################
         # ASSET FILTER events #

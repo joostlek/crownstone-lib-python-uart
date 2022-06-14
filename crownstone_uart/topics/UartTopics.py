@@ -12,3 +12,5 @@ class UartTopics:
 
     assetIdReport = "assetIdReport" # Data is an AssetIdReport class instance.
     assetTrackingReport = "assetTrackingReport" # Data is an AssetMacReport class instance.
+
+    rssiBetweenStones = "rssiBetweenStones" # Data is RssiBetweenStonesPacket
