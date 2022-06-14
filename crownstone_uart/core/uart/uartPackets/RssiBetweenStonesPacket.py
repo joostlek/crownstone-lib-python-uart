@@ -47,6 +47,6 @@ class RssiBetweenStonesPacket(BasePacket):
         return f"RssiBetweenStonesPacket(" \
                f"receiverId={self.receiverId} " \
                f"senderId={self.senderId} "\
-               f"rssi=[{self.rssiPerChannel[0]}, {self.rssiPerChannel[0]}, {self.rssiPerChannel[0]}] " \
+               f"rssi=[{self.rssiPerChannel[0]}, {self.rssiPerChannel[1]}, {self.rssiPerChannel[2]}] " \
                f"lastSeenSecondsAgo={self.lastSeenSecondsAgo} " \
                f"reportNumber={self.reportNumber})"
