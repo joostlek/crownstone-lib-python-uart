@@ -1,5 +1,6 @@
 import logging
 
+from crownstone_core import Conversion
 from crownstone_core.protocol.ControlPackets import ControlPacketsGenerator
 
 from crownstone_uart.core.modules.ControlHandler import ControlHandler
@@ -34,14 +35,14 @@ class SetupHandler:
         controlPacket = ControlPacketsGenerator.getSetupPacket(
             crownstoneId,
             sphereId,
-            keysDict["admin"],
-            keysDict["member"],
-            keysDict["basic"],
-            keysDict["serviceDataKey"],
-            keysDict["localizationKey"],
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["admin"]),
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["member"]),
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["basic"]),
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["serviceDataKey"]),
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["localizationKey"]),
             meshDeviceKey,
-            keysDict["meshApplicationKey"],
-            keysDict["meshNetworkKey"],
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["meshApplicationKey"]),
+            Conversion.ascii_or_hex_string_to_16_byte_array(keysDict["meshNetworkKey"]),
             ibeaconUUID,
             ibeaconMajor,
             ibeaconMinor
