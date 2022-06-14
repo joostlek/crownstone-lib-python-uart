@@ -53,9 +53,9 @@ class CrownstoneUart:
     def is_ready(self) -> bool:
         return self.uartManager.is_ready()
 
-    async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=0):
+    async def initialize_usb(self, port = None, baudrate=230400, writeChunkMaxSize=64):
         """
-        Initialize a Crownstone serial device. 
+        Initialize a Crownstone serial device.
             
         :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
         :param baudrate: baudrate that should be used for this connection. default is 230400.
@@ -87,9 +87,9 @@ class CrownstoneUart:
         UartEventBus.unsubscribe(event)
 
 
-    def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=0):
+    def initialize_usb_sync(self, port = None, baudrate=230400, writeChunkMaxSize=64):
         """
-        Initialize a Crownstone serial device. 
+        Initialize a Crownstone serial device.
             
         :param port: serial port of the USB. e.g. '/dev/ttyUSB0' or 'COM3'.
         :param baudrate: baudrate that should be used for this connection. default is 230400.
