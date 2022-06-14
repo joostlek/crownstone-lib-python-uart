@@ -14,8 +14,8 @@ class MicroappHandler:
         self.control = control
         pass
 
-    # It looks like the UART library cannot send larger commands.
-    MAX_CHUNK_SIZE = 32
+    # The UART RX buffer of the firmware is only 192B.
+    MAX_CHUNK_SIZE = 128
 
     async def getMicroappInfo(self) -> MicroappInfoPacket:
         resultPacket = await self.control._writeControlAndGetResult(ControlPacket(ControlType.MICROAPP_GET_INFO).serialize())
