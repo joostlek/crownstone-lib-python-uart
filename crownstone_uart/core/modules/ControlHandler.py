@@ -31,8 +31,8 @@ class ControlHandler:
         :param masterVersion:     The new master version. If None, the master version will be increased by 1.
         :return:                  The new master version.
         """
-        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"setFilters")
+        _LOGGER.warning("This function will move to the assetFilter.")
         summaries = await self.getFilterSummaries()
         syncer = AssetFilterSyncer(summaries, filters, masterVersion)
         if not syncer.commitRequired:
@@ -59,8 +59,8 @@ class ControlHandler:
 
         :return:   The filter summaries packet.
         """
-        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"getFilterSummaries")
+        _LOGGER.warning("This function will move to the assetFilter.")
         result = await self._write(ControlPacketsGenerator.getGetFilterSummariesPacket())
         if result is None:
             raise CrownstoneException(CrownstoneError.DATA_MISSING, "No summaries received")
@@ -74,8 +74,8 @@ class ControlHandler:
 
         :param filter:  The asset filter to be uploaded.
         """
-        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"uploadFilter {filter}")
+        _LOGGER.warning("This function will move to the assetFilter.")
         chunker = FilterChunker(filter, 128)
         result = None
         for i in range(0, chunker.getAmountOfChunks()):
@@ -90,8 +90,8 @@ class ControlHandler:
 
         :param filterId:     The filter ID to be removed.
         """
-        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"removeFilter id={filterId}")
+        _LOGGER.warning("This function will move to the assetFilter.")
         return await self._write(ControlPacketsGenerator.getRemoveFilterPacket(filterId))
 
     async def commitFilterChanges(self, masterVersion: int, filters: List[AssetFilter], filterSummaries: List[FilterSummaryPacket] = None):
@@ -102,8 +102,8 @@ class ControlHandler:
         :param filters:           A list of asset filters with filter ID, that are uploaded to the Crowstone.
         :param filterSummaries :  A list of filter summaries that are already on the Crownstone.
         """
-        # TODO: move this function to a separate class (AssetFilterHandler)
         _LOGGER.info(f"commitFilterChanges masterVersion={masterVersion}")
+        _LOGGER.warning("This function will move to the assetFilter.")
         masterCrc = AssetFilterMasterCrc.get_master_crc_from_filters(filters, filterSummaries)
         return await self._write(ControlPacketsGenerator.getCommitFilterChangesPacket(masterVersion, masterCrc))
 

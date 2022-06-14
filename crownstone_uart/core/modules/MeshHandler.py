@@ -13,6 +13,7 @@ from crownstone_uart.core.containerClasses.MeshResult import MeshResult
 from crownstone_uart.core.dataFlowManagers.BatchCollector import BatchCollector
 from crownstone_uart.core.dataFlowManagers.Collector import Collector
 from crownstone_uart.core.UartEventBus import UartEventBus
+from crownstone_uart.core.modules.ControlHandler import ControlHandler
 from crownstone_uart.core.uart.uartPackets.UartMessagePacket import UartMessagePacket
 from crownstone_uart.core.uart.UartTypes import UartTxType, UartMessageType
 from crownstone_uart.core.uart.uartPackets.UartWrapperPacket import UartWrapperPacket
@@ -20,6 +21,9 @@ from crownstone_uart.topics.SystemTopics import SystemTopics
 
 
 class MeshHandler:
+    def __init__(self, control: ControlHandler):
+        self.control = control
+        pass
 
     # TODO: make async, wait for uart reply.
     def turn_crownstone_on(self, crownstone_id: int):
