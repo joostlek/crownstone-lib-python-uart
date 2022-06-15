@@ -1,5 +1,13 @@
 # Changelog
 
+## Release 2.5.0
+
+- Added microapp handler.
+- Added setup handler.
+- Added uart topic rssiBetweenStones.
+- Fixed crash on uart CRC mismatch.
+- Changed default chunk size to 64.
+
 ## Release 2.4.0
 
 - Added topics uartDiscardedData and uartRawData.
