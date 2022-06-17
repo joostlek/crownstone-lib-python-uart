@@ -23,6 +23,10 @@ _LOGGER = logging.getLogger(__name__)
 
 class ControlHandler:
 
+    async def factoryReset(self):
+        _LOGGER.info("factory reset")
+        await self._writeControlAndWaitForSuccess(ControlPacketsGenerator.getCommandFactoryResetPacket())
+
     async def setFilters(self, filters: List[AssetFilter], masterVersion: int = None) -> int:
         """
         Makes sure the given filters are set at the Crownstone.
