@@ -53,6 +53,7 @@ class UartRxType(IntEnum):
     FACTORY_RESET =                    10005
     BOOTED =                           10006
     HUB_DATA =                         10007
+    MICROAPP_DATA =                    10008
 
     MESH_SERVICE_DATA =                10102
     EXTERNAL_STATE_PART_0 =			   10103

@@ -14,3 +14,5 @@ class UartTopics:
     assetTrackingReport = "assetTrackingReport" # Data is an AssetMacReport class instance.
 
     rssiBetweenStones = "rssiBetweenStones" # Data is RssiBetweenStonesPacket
+
+    microappMessage = "Microapp_message" # Data is MicroappMessagePacket

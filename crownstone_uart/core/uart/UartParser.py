@@ -4,6 +4,7 @@ import logging
 from crownstone_core.Exceptions import CrownstoneException
 from crownstone_core.packets.ResultPacket import ResultPacket
 from crownstone_core.packets.ServiceData import ServiceData
+from crownstone_core.packets.microapp.MicroappMessagePacket import MicroappMessagePacket
 from crownstone_core.packets.serviceDataParsers.parsers import parseOpcode7
 from crownstone_core.util.Conversion import Conversion
 
@@ -169,6 +170,11 @@ class UartParser:
 
         elif opCode == UartRxType.HUB_DATA:
             pass
+
+        elif opCode == UartRxType.MICROAPP_DATA:
+            packet = MicroappMessagePacket.fromData(messagePacket.payload)
+            print(packet)
+            UartEventBus.emit(UartTopics.microappMessage, packet)
 
         elif opCode == UartRxType.MESH_SERVICE_DATA:
             # data type + service data (15b)
