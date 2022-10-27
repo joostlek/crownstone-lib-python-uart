@@ -173,7 +173,7 @@ class UartParser:
 
         elif opCode == UartRxType.MICROAPP_DATA:
             packet = MicroappMessagePacket.fromData(messagePacket.payload)
-            print(packet)
+            _LOGGER.debug(f"Received microapp message: {packet}")
             UartEventBus.emit(UartTopics.microappMessage, packet)
 
         elif opCode == UartRxType.MESH_SERVICE_DATA:
