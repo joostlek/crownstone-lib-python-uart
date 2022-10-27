@@ -1,5 +1,9 @@
 # Changelog
 
+## Release 2.6.0
+
+- Added microapp message support.
+
 ## Release 2.5.0
 
 - Added microapp handler.
