@@ -43,7 +43,7 @@ class CrownstoneUart:
         self.mesh = MeshHandler(self.control)
         self.setup = SetupHandler(self.control)
         self.assetFilter = AssetFilterHandler(self.control)
-        self.microapp = MicroappHandler(self.control)
+        self.microapp = MicroappHandler(self.control, self.mesh)
         # only for development. Generally undocumented.
         self._usbDev = UsbDevHandler()
 

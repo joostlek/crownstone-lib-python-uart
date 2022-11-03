@@ -14,7 +14,7 @@ class SystemTopics:
     uartWriteSuccess      = 'uartWriteSuccess'       # used to write to the UART. Data is array of bytes.
 
     resultPacket          = 'resultPacket'           # data is a ResultPacket class instance
-    meshResultPacket      = 'meshResultPacket'       # data is a list [CID, ResultPacket]
+    meshResultPacket      = 'meshResultPacket'       # data is a list [Crownstone ID, ResultPacket]
     meshResultFinalPacket = 'meshResultFinalPacket'  # data is a ResultPacket class instance
 
     connectionClosed      = 'connectionClosed'

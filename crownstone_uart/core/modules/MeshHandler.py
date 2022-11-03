@@ -235,7 +235,8 @@ class MeshHandler:
 
 
     async def _command_via_mesh_broadcast(self, packet: bytearray):
-        # this is only for time and noop
+        # Send a control command via the mesh to all crownstones.
+        # Not all control commands are allowed.
         # broadcast to all:
         # value: 1
         corePacket = MeshBroadcastPacket(packet).serialize()
@@ -262,9 +263,11 @@ class MeshHandler:
 
 
     async def _command_via_mesh_broadcast_acked(self, crownstone_uid_array: List[int], packet: bytearray) -> MeshResult:
-        # this is only for the set_iBeacon_config_id
-        # broadcast to all, but retry until ID's in list have acked or timeout
-        # value: 3
+        # Send a control command via the mesh to a list of crownstones.
+        # Not all control commands are allowed.
+        # If the list of crownstone IDs is larger than 1, the command will be broadcasted to all,
+        # but retried until all IDs in list have acked or timed out.
+        # Otherwise, the command will only be received by the single crownstone ID.
         corePacket    = MeshBroadcastAckedPacket(crownstone_uid_array, packet).serialize()
         controlPacket = ControlPacket(ControlType.MESH_COMMAND).loadByteArray(corePacket).serialize()
         uartMessage = UartMessagePacket(UartTxType.CONTROL, controlPacket).serialize()
@@ -295,6 +298,7 @@ class MeshHandler:
 
         # await the amount of times we have ID's to deliver the message to
         for uid in crownstone_uid_array:
+            # Since the individualCollector is using topic meshResultPacket, the data is [Crownstone ID, ResultPacket]
             individualData = await individualCollector.receive()
             if individualData is not None:
                 meshResult.collect_ack(individualData[0], individualData[1].resultCode == ResultValue.SUCCESS)
