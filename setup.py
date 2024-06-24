@@ -15,7 +15,10 @@ setup(
     url="https://github.com/crownstone/crownstone-lib-python-uart",
     install_requires=list(package.strip() for package in open('requirements.txt')),
     classifiers=[
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
+        'License :: OSI Approved :: Apache Software License',
+        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)'
     ],
     python_requires='>=3.7',
 )
